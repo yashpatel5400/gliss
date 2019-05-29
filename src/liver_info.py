@@ -26,6 +26,21 @@ def load_processsed_hepatocyte_data(main_dir, center=True, scale=False):
     y = norm_mtx(y, center=center, scale=scale)
     return x, y, obs_df, var_df
 
+
+def output_processed_data(main_dir, processed_dir):
+    tmp_dir = os.path.join(main_dir, "data")
+    obs_df = pd.read_csv(os.path.join(tmp_dir, "obs_info.csv"), index_col=0)
+    var_df = pd.read_csv(os.path.join(tmp_dir, "var_info.csv"), index_col=0)
+    x = np.load(os.path.join(tmp_dir, "x_data_unscaled.npy"))
+    y = np.load(os.path.join(tmp_dir, "y_data_unscaled.npy"))
+    out_dir = os.path.join(processed_dir, "data")
+    os.makedirs(out_dir, exist_ok=True)
+    obs_df.to_csv(os.path.join(out_dir, "obs_info.csv"))
+    var_df.to_csv(os.path.join(out_dir, "var_info.csv"))
+    np.savetxt(os.path.join(out_dir, "matrix_unscaled.csv"), y, delimiter=",")
+    logger.info("Saved outputs to: {}".format(out_dir))
+
+
 def load_zonation_result(dat_dir, just_vals=False):
     # load the zonation data 
     meta_dat = pd.read_csv(os.path.join(dat_dir, "table_s2_reform.csv"))

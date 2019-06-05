@@ -1036,7 +1036,7 @@ def plot_scatter_continuous(projected, values, ax, logscale=True, ms=5, sortvals
     ax.spines['top'].set_visible(False)
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
-    plt.colorbar(scat, ax=ax)
+    plt.colorbar(scat, ax=ax, format=FormatStrFormatter('%.1f'))
     return scat 
 
 def plot_scatter_discrete(projected, labels, ax, ms=5, cols="Spectral"):

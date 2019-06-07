@@ -200,10 +200,6 @@ def measure_all_correlations(x, y):
     return out
 
 
-def scale_corr_input(in_dat):
-    out_dat = (in_dat - in_dat.mean(axis=0)) / in_dat.std(axis=0)
-    return out_dat
-
 @njit(cache=True, fastmath=True)
 def univ_ss_dist(vec, dist):
     # sum of square distance of pairwise univariate
@@ -387,6 +383,11 @@ def multi_vs_one_dist_corr(X, S, perm=False, n_perm=10000, **kwargs):
         if i % 1000 == 0:
             print("computed {} features...".format(i))
     return(np.array(out_vec))
+
+
+def scale_corr_input(in_dat):
+    out_dat = (in_dat - in_dat.mean(axis=0)) / in_dat.std(axis=0)
+    return out_dat
 
 def get_corr_scores(x_mat, y_mat, 
                     tmp_dir, 

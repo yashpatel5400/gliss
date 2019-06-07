@@ -165,6 +165,7 @@ def load_hepatocyte_data(dat_dir, verbose=False):
         print(adata)
     return adata
     
+
 def save_x_y_data(main_dir, x, y, pfx):
     tmp_dir = os.path.join(main_dir, "data")
     if not os.path.exists(tmp_dir):
@@ -184,7 +185,7 @@ def save_processed_data(main_dir, x, y, obs_df, var_df):
     print("Saved: x {} and y {} at {}".format(x.shape, y.shape, tmp_dir))
     print(obs_df.head())
     print(var_df.head())
-
+    
 def load_x_y_data(main_dir, center=True, scale=False):
     tmp_dir = os.path.join(main_dir, "data")
     obs_df = pd.read_csv(os.path.join(tmp_dir, "obs_info.csv"), index_col=0)
@@ -220,40 +221,6 @@ def load_x_y_data(main_dir, center=True, scale=False):
 #         x_scaled.shape, y_scaled.shape, tmp_dir))
 #     return x_scaled, y_scaled, obs_df, var_df
 
-def compute_log_gene_summary(adata):
-    in_mat = np.log1p(adata.X) # natural log
-    log_gene_df = pd.DataFrame(index=adata.var['gene_ids'])
-    log_gene_df["mean"] = in_mat.mean(axis=0)
-    log_gene_df["std"] = in_mat.std(axis=0)
-    log_gene_df["cv"] = log_gene_df["std"] / log_gene_df["mean"] 
-    log_gene_df["sparsity"] = (in_mat < 1e-5).sum(axis=0) / in_mat.shape[0]
-    return log_gene_df
-        
-def transform_filter_anndata(adata, std_ln_filter = 0.1, scale_pfx="original"):
-    # scale total counts of each cell ('n_counts') to be the same (or median)
-    sc.pp.normalize_per_cell(adata, counts_per_cell_after=1e4)
-    
-    # select genes based on their log-scale variance
-    log_gene_df = compute_log_gene_summary(adata)
-    keep_genes = log_gene_df["std"] > std_ln_filter
-    log_gene_df["keep"] = keep_genes
-    print("Keeping {} / {} genes with log1p and std > {}".format(
-         np.sum(keep_genes), len(keep_genes), std_ln_filter))
-    adata = adata[:, log_gene_df["keep"]]
-    
-    # log-transform the umi counts
-    sc.pp.log1p(adata)
-    print("Log-transformed anndata")
-    
-    # optionally regress out the size factors
-    if scale_pfx == "size_norm":
-        print("Regressing out size effects from anndata")
-        sc.pp.regress_out(adata, ['n_counts'])
-    
-    # optional further processing
-    # sc.pp.normalize_per_cell(adata) # median normalization not use here
-    # if necessary: center and scale each gene later
-    return adata, log_gene_df
     
 def get_projection(proj_type):
     results_file = os.path.join(dat_dir,'{}_2k.h5ad'.format(sample_name))

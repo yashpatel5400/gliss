@@ -138,7 +138,10 @@ def save_data_to_file(data, fname, ftype):
     if ftype == "npy":
         np.save(fname, data)
     elif ftype == "csv":
-        data.to_csv(fname, index=False)
+        if isinstance(data, np.ndarray):
+            np.savetxt(fname, data, delimiter=",")
+        else:
+            data.to_csv(fname, index=False)
     elif ftype == "pkl":
         with open(fname, "wb") as outfile:
             pickle.dump(data, outfile,

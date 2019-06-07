@@ -1066,19 +1066,8 @@ def plot_scatter_discrete(projected, labels, ax, ms=5, cols="Spectral"):
     ax.spines['top'].set_visible(False)
     return scat
 
-# def plot_scatter_discrete(x, y, c, labs, ms = 8, cols=None):
-#     # create the new map
-#     cmap = plt.cm.get_cmap(cols)
-#     cmaplist = [cmap(i) for i in range(cmap.N)]
-#     cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
-#     bounds = np.linspace(0,len(labs),len(labs)+1)
-#     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-    
-#     scat = plt.scatter(x, y, c=c, s = ms, cmap=cmap, norm=norm)
-#     cb = plt.colorbar(scat, spacing='proportional',ticks=bounds+0.5)
-#     cb.set_ticklabels(labs)
-#     return scat
 
+# TODO: remove plot multiple features in the future
 def plot_multiple_features(proj, df, numerical=True, num_cols=5):
     feat_list = df.columns.tolist()
     num_feats = len(feat_list)
@@ -1106,6 +1095,42 @@ def plot_multiple_features(proj, df, numerical=True, num_cols=5):
                 else:
                     ax_i_j =  ax[i][j]
                 ax_i_j.remove()
+ 
+
+def adjust_xy_labels(ax, xy_labels=("t-SNE 1", "t-SNE 2")):
+    ax.set_xlabel(xy_labels[0])
+    ax.set_ylabel(xy_labels[1])
+    ax.get_xaxis().set_ticks([])
+    ax.get_yaxis().set_ticks([])
+
+def plot_multi_scatter_discrete(input_df, proj):
+    genes = list(input_df.columns)
+    n_cols = 8
+    n_cols = min(len(genes),n_cols)
+    n_rows = int(np.ceil(len(genes) / n_cols))
+    # logger.info("Plotting genes: {}".format(genes))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(2.3*n_cols, 0.3+1.9*n_rows))
+    for i_row in range(n_rows):
+        for i_col in range(n_cols):
+            if n_rows == 1:
+                if n_cols == 1:
+                    ax = axes
+                else:
+                    ax = axes[i_col]
+            else:
+                ax = axes[i_row, i_col]
+            i_gene = n_cols * i_row + i_col
+            if i_gene >= len(genes):
+                ax.axis('off')
+            else:
+                gene = genes[i_gene]
+                vals = input_df[gene]
+                plot_scatter_continuous(proj, vals, ax, ms=1)
+                ax.set_title(gene)
+                adjust_xy_labels(ax)
+    plt.tight_layout()
+    plt.show()
+    
 
 # plot for principle curves
 # plot the curve and the data projection on the curve

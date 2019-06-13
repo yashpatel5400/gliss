@@ -228,3 +228,21 @@ def setup_cmp_df(res_dict):
         logger.info("{} threshold: {:.4f}".format(m, pt))
         pval_thres.append(pt) 
     return pval_df, pval_thres, cmp_sets, mets
+
+
+def get_unique_rejection_df(res_dict, var_df):
+    pval_df, pval_thres, cmp_sets, mets = setup_cmp_df(res_dict)
+    pval_df = pd.concat([var_df.reset_index(drop=True), pval_df], axis=1)
+    df_list = []
+    for i in range(2):
+        j = 1 * (i == 0)
+        sub_df = pval_df.loc[pval_df[mets[i]] <= pval_thres[i]]
+        sub_df = sub_df.loc[sub_df[mets[j]] > pval_thres[j]]
+        sub_df["exclusive_rejection"] = mets[i]
+        logger.info("Set selection: {}".format(sub_df.shape)) 
+        sub_df = sub_df.set_index("gene_ids")
+        sub_df = sub_df.sort_values([mets[i], mets[j]], ascending=[1, 0])
+        df_list.append(sub_df)
+    df_comp = pd.concat(df_list, axis=0) # should never conflict
+    df_dict = dict(zip(mets, df_list))
+    return df_dict, df_comp

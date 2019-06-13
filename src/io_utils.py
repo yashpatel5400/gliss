@@ -205,7 +205,10 @@ def load_all_pipeline_results(RDIR):
             key = "{}_{}".format(method, mtype)
             fn =  "result_{}_{}.plk".format(method, mtype)
             fn = os.path.join(RDIR, fn)
-            pipe_res[key] = pickle.load(open(fn, "rb"))
+            if os.path.exists(fn):
+                pipe_res[key] = pickle.load(open(fn, "rb"))
+            else:
+                logger.warning("{} does not exist".format(fn))
     # for the unsupervised methods        
     all_lams = {}
     for method in ["graph", "pc"]:

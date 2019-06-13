@@ -13,10 +13,10 @@ from general_utils import norm_mtx
 import logging
 logger = logging.getLogger("feat_viz")
 
-
 def load_processed_enterocyte_data(RDIR, center=True, scale=False):
     out_dir = os.path.join(RDIR, "entero_data", "data")
     obs_df, var_df, mtx = read_unscaled_processed_data(out_dir)
+#     var_df = var_df.set_index("gene_ids")
     mtx = norm_mtx(mtx, center=center, scale=scale)
     return obs_df, var_df, mtx
 
@@ -75,14 +75,16 @@ def load_enterocyte_raw_data(dat_dir):
     raw_dat.index = cell_df["cell_id"]
     return raw_dat
 
-def load_enterocyte_meta_data(dat_dir):
+def load_enterocyte_meta_data(plot=True):
+    dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
     fn = os.path.join(dat_dir, "table_C_scRNAseq_tsne_coordinates_zones.tsv")
     cell_df = pd.read_table(fn, delimiter="\t")
     cell_df = cell_df.set_index("cell_id")
     proj = cell_df[["tSNE_coordinate_1", "tSNE_coordinate_2"]]
-    fig, ax = plt.subplots(1, 1, figsize=(2.7, 2.5))
-    plot_scatter_discrete(proj, cell_df["zone"], ax, ms=1)
-    adjust_xy_labels(ax)
+    if plot:
+        fig, ax = plt.subplots(1, 1, figsize=(2.7, 2.5))
+        plot_scatter_discrete(proj, cell_df["zone"], ax, ms=1)
+        adjust_xy_labels(ax)
     plt.show()
     return cell_df
 
@@ -113,5 +115,27 @@ def load_enterocyte_data(dat_dir, verbose = True):
     # adata = adata[cell_sel, :]
     # if verbose:
     #     print("Filtered out: {} doublet cells".format(np.sum(np.logical_not(cell_sel))))
-    #     print(adata)
+    #     print(adata)set_index
     return adata
+
+
+def load_original_entero_zonation(just_vals=False):
+    # load the zonation data 
+    cell_df = load_enterocyte_meta_data(plot=False)
+    zones = list(cell_df["zone"])
+    mapping = {}        
+    if just_vals:
+        mapping = {}
+        for key in np.unique(zones):
+            sp = key.split("V")
+            if len(sp) == 2:
+                val = int(sp[1])
+            else:
+                if sp[0] == "Crypt":
+                    val = 0
+                else:
+                    assert 0, "Bad index: {}".format(val)
+            mapping[key] = val
+        logger.info("{}".format(mapping))  
+        zones = [mapping[v] for v in zones]
+    return zones

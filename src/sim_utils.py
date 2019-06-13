@@ -467,7 +467,7 @@ def comp_perm_pval(stat_vals, perm_vals, ascending=True):
 # Apr.11.19 simulation
 
 def get_sim_id_classes():
-    full_sim_ids = ["main_sim_{}".format(i) for i in range(6)]
+    full_sim_ids = ["main_sim_{}".format(i) for i in range(7)]
     strict_sim_ids = ["main_sim_strict_1"]
     return full_sim_ids, strict_sim_ids
 
@@ -488,7 +488,8 @@ def get_sim_params(sim_id):
                              "rel_noise_list": [1, 1e-1]},
                 "x_param": {"spike_grp": ["right", "left", "mid", "mid"],
                              "n_repetitions": None, 
-                             "rel_noise_list": None},
+                             "rel_noise_list": None,
+                             "seed_offset": 0},
                 "n_trials": 100,
                 "noise_levs": [0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3],
                 "sparsities": [0.001, 0.005, 0.01, 0.05, 0.10],
@@ -511,7 +512,8 @@ def get_sim_params(sim_id):
                             "rel_noise_list": [1, 1e-1]},
                 "x_param": {"spike_grp": nn_pattern,
                             "n_repetitions": None, 
-                            "rel_noise_list": None},
+                            "rel_noise_list": None,
+                            "seed_offset": 0},
                 "n_trials": 100,
                 "noise_levs": [0.1, 0.5, 1, 1.5, 2, 3],
                 "sparsities": [0.01, 0.05, 0.10, 0.20],
@@ -530,7 +532,7 @@ def get_sim_params(sim_id):
                                      "n_repetitions": 1,
                                      "rel_noise_list": [1e-1]}
                 params["sparsities"] = [0.05, 0.10, 0.20]
-        if sim_id == "main_sim_4":
+        if sim_id == "main_sim_4"  or  sim_id == "main_sim_6" :
             params["null_struct"] = example_null_struct
             params["methods"] = example_all_methods
             params["sparsities"] = [0.05, 0.10, 0.20]

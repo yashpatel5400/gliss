@@ -72,41 +72,6 @@ def add_margin(ax, axis, min_val, max_val):
         ax.set_ylim(*update)
         
         
-def plot_full_pattern(ax, lam_in, 
-                      gene_expr, 
-                      scatter=True, 
-                      fit=True, 
-                      n_bins=9,
-                      order_only=True,
-                      add_color_bar=False,
-                      labels=None):
-    if order_only: # only consider the rank ordering
-        lam_in = rank_and_bin(lam_in, n_bins=len(lam_in))
-    grp = rank_and_bin(lam_in, n_bins=n_bins, linspace=True)  
-    df = pd.DataFrame({"lam": lam_in, "gene_expr": gene_expr, "grp": grp})
-    if scatter:
-        if labels:
-            colmap = "Spectral"
-            labs, c = np.unique(labels, return_inverse=True)
-            cmap = plt.cm.get_cmap(colmap)
-            bounds = np.linspace(0,len(labs),len(labs)+1)
-            norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-            color_map = create_color_map(labels, colmap)
-            cols = [color_map[lab] for lab in labels]
-            scat = ax.scatter(lam_in, gene_expr, s=3, c=c, cmap=cmap, norm=norm)
-        else:
-            cols = "darkgrey"
-            scat = ax.scatter(lam_in, gene_expr, s=1)
-        sns.rugplot(lam_in, ax=ax, c=cols)
-        if add_color_bar:   
-            plt.colorbar(scat, ax=ax)
-    if fit:
-        sns.lineplot(x="grp", y="gene_expr", data=df, ax=ax, ci="sd",
-                     color="black")
-    
-    
-    add_margin(ax, "y", 0.01, 0)
-    add_margin(ax, "x", 0.01, 0.01)    
 
 def get_col(key):
     col_params = dict(my_red='#FFEAEA')
@@ -1103,7 +1068,7 @@ def adjust_xy_labels(ax, xy_labels=("t-SNE 1", "t-SNE 2")):
     ax.get_xaxis().set_ticks([])
     ax.get_yaxis().set_ticks([])
 
-def plot_multi_scatter_discrete(input_df, proj):
+def plot_multi_scatter_discrete(input_df, proj, ms=1, logscale=True):
     genes = list(input_df.columns)
     n_cols = 8
     n_cols = min(len(genes),n_cols)
@@ -1125,7 +1090,7 @@ def plot_multi_scatter_discrete(input_df, proj):
             else:
                 gene = genes[i_gene]
                 vals = input_df[gene]
-                plot_scatter_continuous(proj, vals, ax, ms=1)
+                plot_scatter_continuous(proj, vals, ax, ms=ms, logscale=logscale)
                 ax.set_title(gene)
                 adjust_xy_labels(ax)
     plt.tight_layout()
@@ -1248,7 +1213,8 @@ def plot_pcurve_fits(x,
             # ax.scatter(lams, z[:,i_row], s=10)
             sns.rugplot(lams, ax=ax, c=cols)
             if len(iter_vals) == 1:
-                ax.set_ylabel(var_names[i_row])
+                if var_names is not None:
+                    ax.set_ylabel(var_names[i_row])
                 ax.set_xlabel("$\lambda$")
             else:
                 if i_row == 0:
@@ -1354,3 +1320,122 @@ def plot_and_compare_results(res_dict, plot_pvals=False):
             ax.set_ylabel("Expected ($-\log_{10}$ p-value)")
             ax.set_title(met)
         plt.show()
+        
+def plot_corr_mtx(df, plain=False, fn=None, vmin=0, vmax=1):
+    corr_df = df.corr('spearman')
+    if plain:
+        fig, ax = plt.subplots(1, 1, figsize=(3.2,3.2))
+        show_cbar = False
+    else:
+        fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.5))
+        show_cbar = True
+    sns.heatmap(corr_df, annot=True, fmt=".2f", square=True, ax=ax,
+                cbar=show_cbar, cbar_kws={"shrink": .8}, 
+                vmin=vmin, vmax=vmax)
+    if plain:
+        ax.set_xticks([])
+        ax.set_yticks([])
+    if fn:
+        plt.savefig(fn, bbox_inches='tight') 
+        logger.info("Saved figure to: {}".format(fn))
+    plt.show()
+
+def plot_full_pattern(ax, lam_in, 
+                      gene_expr, 
+                      scatter=True, 
+                      fit=True, 
+                      n_bins=9,
+                      order_only=True,
+                      add_color_bar=False,
+                      labels=None):
+    if order_only: # only consider the rank ordering
+        lam_in = rank_and_bin(lam_in, n_bins=len(lam_in))
+    grp = rank_and_bin(lam_in, n_bins=n_bins, linspace=True)  
+    df = pd.DataFrame({"lam": lam_in, "gene_expr": gene_expr, "grp": grp})
+    if scatter:
+        if labels:
+            colmap = "Spectral"
+            labs, c = np.unique(labels, return_inverse=True)
+            cmap = plt.cm.get_cmap(colmap)
+            bounds = np.linspace(0,len(labs),len(labs)+1)
+            norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+            color_map = create_color_map(labels, colmap)
+            cols = [color_map[lab] for lab in labels]
+            scat = ax.scatter(lam_in, gene_expr, s=3, c=c, cmap=cmap, norm=norm)
+        else:
+            cols = "darkgrey"
+            scat = ax.scatter(lam_in, gene_expr, s=1)
+        sns.rugplot(lam_in, ax=ax, c=cols)
+        if add_color_bar:   
+            plt.colorbar(scat, ax=ax)
+    if fit:
+        sns.lineplot(x="grp", y="gene_expr", data=df, ax=ax, ci="sd",
+                     color="black")
+    add_margin(ax, "y", 0.01, 0)
+    add_margin(ax, "x", 0.01, 0.01)    
+    
+def plot_gene_expr_comp(lam_df, gene_df, methods, aliases, horizontal=False, fontsize=16, fn=None):
+    genes = list(gene_df.columns)
+    labels = list(lam_df["smFISH"])
+    
+    if len(genes) == 1 and len(methods) == 1:
+        fig, axes = plt.subplots(1, 1, figsize=(5, 4))
+    else:
+        if horizontal:
+            fig, axes = plt.subplots(len(methods), len(genes), 
+                                 figsize=(2.3*len(genes), 2*len(methods)))
+        else:
+            fig, axes = plt.subplots(len(genes), len(methods), 
+                                 figsize=(1.65*len(methods), 1.5*len(genes)),
+                                 sharex="col", sharey="row")
+    
+    for i, gene in enumerate(genes):
+        for j, method in enumerate(methods):
+            if len(genes) == 1 and len(methods) == 1:
+                ax = axes
+                add_cbar = True
+            else:
+                add_cbar = False
+                if len(genes) == 1:
+                    ax = axes[j]
+                elif len(methods) == 1:
+                    ax = axes[i]
+                else:        
+                    if horizontal:
+                        ax = axes[j, i]
+                    else:
+                        ax = axes[i, j]
+            order_only = (method != "smFISH")
+            plot_full_pattern(ax, lam_df[method], gene_df[gene], 
+                              order_only=order_only,
+                              add_color_bar=add_cbar, labels=labels)    
+            if horizontal:
+                ax.set_xlabel(None)
+                fig.subplots_adjust(hspace=0.5, wspace=0.42)
+                ax.set_ylabel(gene, labelpad=0, fontsize=fontsize)
+                if len(methods) > 1:
+                    ax.set_title(aliases[method])    
+            else:
+                if j == 0:
+                    ax.set_ylabel(gene, fontsize=fontsize)
+                if i == (len(genes) -1):
+                    ax.set_xlabel(aliases[method], fontsize=fontsize)
+                fig.subplots_adjust(hspace=0, wspace=0)
+            
+            ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+            ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+            ax.tick_params(axis='both', which='major', pad=2, labelsize=fontsize-1)
+            if method == "smFISH":
+                xticks = [1,3, 5, 7, 9]
+            else:
+                xticks = [0, 1000]
+            if gene == "Malat1":
+                ax.set_ylim(-0.5, 3)
+                ax.set_yticks(ticks=[0, 1, 2])  
+            ax.set_xticks(ticks=xticks)    
+            ax.get_legend().remove()
+    if fn:
+        plt.savefig(fn, bbox_inches='tight', transparent=True, dpi=150) 
+        logger.info("Saved figure to: {}".format(fn))
+    plt.show()
+    

@@ -88,3 +88,11 @@ def summarize_gene_df(adata):
     gene_scores = pd.DataFrame(gene_scores, index=adata.var.index)
     gene_scores = adata.var.join(gene_scores, how="left")
     return gene_scores
+
+def get_gene_df(genes, var_df, mtx):
+    new_df = var_df.set_index("gene_ids")
+    inds = [int(var_df.index[var_df["gene_ids"]==g][0]) for g in genes]
+    sub_mtx = mtx[:, inds]
+    sub_df = pd.DataFrame(sub_mtx, columns=genes)
+    logger.info("x_star_df dim: {}".format(sub_df.shape))
+    return sub_df

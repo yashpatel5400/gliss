@@ -49,7 +49,7 @@ def get_intestine_rna_lm_genes():
     low_thres = 2.5
     low_zone = 1
     low_rna_df = rna_df.loc[(rna_df.com < low_thres) & (rna_df.mx == low_zone)]
-    logger.info("Kept {} low zone genes with geom avg < {} ".format(low_rna_df.shape[0], low_zone))
+    logger.info("Kept {} low zone genes with geom avg < {} ".format(low_rna_df.shape[0], low_thres))
     low_genes = list(low_rna_df.gene_name)
 #     print(low_genes)
     return {"high": high_genes, "low": low_genes}

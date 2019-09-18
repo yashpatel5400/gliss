@@ -13,6 +13,15 @@ from general_utils import norm_mtx
 import logging
 logger = logging.getLogger("feat_viz")
 
+def get_intersect_lm_genes(var_df):
+    lm_genes = get_intestine_rna_lm_genes()
+    lm_genes = lm_genes["high"] + lm_genes["low"]
+    logger.info("Number of original lm genes: {}".format(len(lm_genes)))
+    lm_genes = list(set(lm_genes).intersection(set(var_df["gene_ids"])))
+    lm_genes = sorted(lm_genes)
+    logger.info("Number of intersecting lm genes: {}".format(len(lm_genes)))
+    return lm_genes
+
 def load_processed_enterocyte_data(RDIR, center=True, scale=False):
     out_dir = os.path.join(RDIR, "entero_data", "data")
     obs_df, var_df, mtx = read_unscaled_processed_data(out_dir)

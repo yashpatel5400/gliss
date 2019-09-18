@@ -10,6 +10,7 @@ from general_utils import norm_mtx
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import seaborn as sns
+from scrna_utils import prepare_adata_init
 
 import logging
 logger = logging.getLogger("feat_viz")
@@ -137,32 +138,7 @@ def load_hepatocyte_data(dat_dir, verbose=False):
     # the first column is the gene - make index
     dat = pd.read_table(os.path.join(dat_dir, "table_s1_reform.txt"), delimiter=" ")
     dat = dat[dat.columns[:-1]].set_index("gene")
-    dat.shape # Proceed with the scanpy pipeline
-
-    adata = AnnData(dat.T.values)
-    adata.obs_names = np.array(dat.columns)
-    adata.var_names = np.array(dat.index)
-    adata.var['gene_ids'] = dat.index
-    adata.var_names_make_unique()
-    if verbose:
-        sc.pl.highest_expr_genes(adata, n_top=10)
-
-    # filter out zero genes
-    sc.pp.filter_cells(adata, min_genes=200)
-    adata.raw = adata.copy()
-    sc.pp.filter_genes(adata, min_cells=10)
-    adata.obs['n_counts'] = adata.X.sum(axis=1)
-    if verbose:
-        sc.pl.violin(adata, ['n_genes', 'n_counts'], jitter=0.4, multi_panel=True)
-        nz_genes = len(adata.var['gene_ids'])
-        print("Filtered out: {} genes; remaining {}".format(len(dat.index) - nz_genes, nz_genes))
-
-    # filter cells with too many counts (potential doublets)
-    cell_sel = adata.obs['n_genes'] < 5000
-    adata = adata[cell_sel, :]
-    if verbose:
-        print("Filtered out: {} doublet cells".format(np.sum(np.logical_not(cell_sel))))
-        print(adata)
+    adata = prepare_adata_init(dat, verbose=verbose)
     return adata
     
 

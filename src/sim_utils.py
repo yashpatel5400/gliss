@@ -141,7 +141,7 @@ def add_gaussian_noise(mat, noise, seed=0):
     nmat = np.reshape(nmat, mat.shape) + mat
     return nmat
 
-def add_correlated_noise(x_null, null_struct, seed=0, trunc=True):
+def add_correlated_noise(x_null, null_struct, seed=0, trunc=True, scale=1):
     n_samps = x_null.shape[0]
     n_vars = x_null.shape[1]
     bsize = null_struct["block_size"]
@@ -151,11 +151,11 @@ def add_correlated_noise(x_null, null_struct, seed=0, trunc=True):
     n_null_grps = int(np.ceil(n_vars / bsize))
     mvn_mtx = np.random.multivariate_normal(mean=mean, cov=cov, size=n_samps*n_null_grps)
     mvn_mtx = mvn_mtx.reshape(n_samps, n_null_grps * bsize)
-    mvn_mtx = mvn_mtx[:, :n_vars]
+    mvn_mtx = mvn_mtx[:, :n_vars] * scale
     if trunc:
         mvn_mtx[mvn_mtx > 1] = 1
         mvn_mtx[mvn_mtx < 0] = 0
-    return mvn_mtx
+    return mvn_mtx + x_null
 
 def generate_shifted_obs_vars(n_samp, n_shifts = 10, n_null_v = 10):
     np.random.seed(10)

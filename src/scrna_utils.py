@@ -11,6 +11,35 @@ from io_utils import save_data_to_file, load_data_from_file
 import logging
 logger = logging.getLogger("feat_viz")
 
+
+def prepare_adata_init(dat, min_genes=200, min_cells=10, max_genes=5000, verbose=False):
+    # dat has columns as samples and rows as genes
+    # Proceed with the scanpy pipeline
+    adata = AnnData(dat.T.values)
+    adata.obs_names = np.array(dat.columns)
+    adata.var_names = np.array(dat.index)
+    adata.var['gene_ids'] = dat.index
+    adata.var_names_make_unique()
+    if verbose:
+        sc.pl.highest_expr_genes(adata, n_top=10)
+    # filter out zero genes
+    sc.pp.filter_cells(adata, min_genes=min_genes)
+    adata.raw = adata.copy()
+    sc.pp.filter_genes(adata, min_cells=10)
+    adata.obs['n_counts'] = adata.X.sum(axis=1)
+    if verbose:
+        sc.pl.violin(adata, ['n_genes', 'n_counts'], jitter=0.4, multi_panel=True)
+        nz_genes = len(adata.var['gene_ids'])
+        print("Filtered out: {} genes; remaining {}".format(len(dat.index) - nz_genes, nz_genes))
+
+    # filter cells with too many counts (potential doublets)
+    cell_sel = adata.obs['n_genes'] < max_genes
+    adata = adata[cell_sel, :]
+    if verbose:
+        print("Filtered out: {} doublet cells".format(np.sum(np.logical_not(cell_sel))))
+        print(adata)
+    return adata
+
 def compute_log_gene_summary(adata):
     in_mat = np.log1p(adata.X) # natural log
     log_gene_df = pd.DataFrame(index=adata.var['gene_ids'])
@@ -88,6 +117,12 @@ def summarize_gene_df(adata):
     gene_scores = pd.DataFrame(gene_scores, index=adata.var.index)
     gene_scores = adata.var.join(gene_scores, how="left")
     return gene_scores
+
+def split_by_lm_genes(genes, var_df, mtx):
+    new_df = var_df.set_index("gene_ids")
+    anchor = var_df['gene_ids'].isin(genes)
+    return mtx[:, anchor], mtx[:, -anchor]
+    
 
 def get_gene_df(genes, var_df, mtx):
     new_df = var_df.set_index("gene_ids")

@@ -657,7 +657,7 @@ def generate_synthetic_data(params, linspace=False, sort=False):
     return lam, x, y, nn
 
 
-def generate_x_mtx(lam, x_params, global_params):
+def generate_x_mtx(lam, x_params, global_params, no_noise=False):
     
     n_samps = global_params["n_samps"]
     target_vars = global_params["target_vars"]
@@ -674,11 +674,14 @@ def generate_x_mtx(lam, x_params, global_params):
     x_nn, _ = generate_spike_mtx(lam, **x_params)
     x_null = np.zeros((n_samps, target_vars-n_rep*n_proto))
     # handle the non-null structure here
-    if global_params["null_struct"]:
-        logger.info("Null structure: {}".format(global_params["null_struct"]))
-        x_null = add_correlated_noise(x_null, global_params["null_struct"])
+    if no_noise:
+        pass
     else:
-        x_null = add_uniform_noise(x_null, 1)
+        if global_params["null_struct"]:
+            logger.info("Null structure: {}".format(global_params["null_struct"]))
+            x_null = add_correlated_noise(x_null, global_params["null_struct"])
+        else:
+            x_null = add_uniform_noise(x_null, 1)
     x = np.concatenate([x_nn, x_null], axis=1)
     return x
 

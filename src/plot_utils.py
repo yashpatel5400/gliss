@@ -1327,7 +1327,7 @@ def plot_corr_mtx(df, plain=False, fn=None, vmin=0, vmax=1):
         fig, ax = plt.subplots(1, 1, figsize=(3.2,3.2))
         show_cbar = False
     else:
-        fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.5))
+        fig, ax = plt.subplots(1, 1, figsize=(5, 5))
         show_cbar = True
     sns.heatmap(corr_df, annot=True, fmt=".2f", square=True, ax=ax,
                 cbar=show_cbar, cbar_kws={"shrink": .8}, 

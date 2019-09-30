@@ -666,10 +666,6 @@ def generate_x_mtx(lam, x_params, global_params, no_noise=False):
     n_rep = x_params["n_repetitions"]
     n_proto = len(x_params["spike_grp"])
     
-    # remove the two parameters for the input of generate_spike_mtx
-#     del x_params["n_samps"]
-#     del x_params["target_vars"]
-    
     np.random.seed(seed)
     x_nn, _ = generate_spike_mtx(lam, **x_params)
     x_null = np.zeros((n_samps, target_vars-n_rep*n_proto))
@@ -683,6 +679,7 @@ def generate_x_mtx(lam, x_params, global_params, no_noise=False):
         else:
             x_null = add_uniform_noise(x_null, 1)
     x = np.concatenate([x_nn, x_null], axis=1)
+    
     return x
 
 def run_regime_feat_sel(params, p_params):
@@ -1053,3 +1050,125 @@ def run_pipeline_nnvars(params,
     example_data["mtx"] = in_mtx
     example_data["aux"] = aux
     return df, example_data
+
+
+# -----------------------------------
+# simulation for correlation analysis
+def get_corr_sim(sim_id = "corr_sim", regime=0):
+    if regime == 0:
+        corr_value = 0.1
+    elif regime == 1:
+        corr_value = 0.2
+    elif regime == 2:
+        corr_value = 0.4
+    else:
+        assert 0, 'Regime not found: {}'
+    sim_params = get_sim_params("main_sim_6")
+    x_param = sim_params["x_param"]
+    x_param["rel_noise_list"] = [0.1]
+    x_param["n_repetitions"] = 150
+    z_param = sim_params["z_param"]
+    z_param['spike_grp'] =  ['left', 'mid', 'right']
+    z_param['rel_noise_list'] =  [0.1, 0.1]
+    sim_params['target_vars'] = 6000 - len(z_param['spike_grp']) * len(z_param['rel_noise_list'])
+    sim_params['noise_levs'] = []
+    sim_params['sparsities'] = []
+    sim_params['methods'] = ['unsup_graph', 'graph']
+    sim_params['sim_dir'] = '/share/PI/sabatti/feat_viz/{}/regime_{}'.format(sim_id, regime)
+    sim_params['method_params'] =  {
+        "method": "graph",
+        "n_perms": 10000,
+        "perm_method": "pool",
+        "alpha": 0.05, 
+        "graph_k": 10,
+    }
+    noise_params = sim_params["null_struct"]
+    noise_params['corr_value'] = corr_value
+    noise_params['scale'] = 0.5
+    noise_params['seed'] = 10
+    return sim_params
+
+def get_variable_group_ids(sim_params):
+    x_param = sim_params["x_param"]
+    n_proto = len(x_param["spike_grp"])
+    n_rep = x_param["n_repetitions"] * len(x_param["rel_noise_list"])
+    var_ids = np.ones(sim_params["target_vars"]) * -1
+    for i in range(n_proto):
+        var_ids[i*(n_rep): (i+1)*n_rep] = i
+    return var_ids
+
+def generate_invariant_data(sim_params):
+    np.random.seed(sim_params["seed"])
+    lam = np.random.uniform(size=sim_params["n_samps"])
+    z, _ = generate_spike_mtx(lam, **sim_params["z_param"]) # landmark matrix
+    x = generate_x_mtx(lam, sim_params["x_param"], sim_params, no_noise=True) # remaining matrix
+    nn_grp = get_variable_group_ids(sim_params).astype(int)
+    var_df = pd.DataFrame({'var_id': np.arange(x.shape[1]), 'nn_grp': nn_grp})
+    return lam, z, x, var_df
+
+def model_corr_noise(null_struct, z, x):
+    # process data
+    orig_mtx = np.concatenate([z, x], axis=1) 
+    n_lm_genes = z.shape[1]
+    grp_size = null_struct['block_size']
+
+    np.random.seed(null_struct['seed'])
+    noise_mtx = np.zeros(orig_mtx.shape) # add structured noise in blocks
+    noise_mtx = add_correlated_noise(noise_mtx, 
+                                     null_struct, 
+                                     scale=null_struct["scale"], 
+                                     trunc=False)
+    
+    map_idx = np.random.permutation(orig_mtx.shape[1])
+    rev_idx = [0] * len(map_idx)
+    x_corr_grp = np.array([0] * x.shape[1])
+    for old_id, curr_id in enumerate(map_idx):
+        rev_idx[curr_id] = old_id
+        x_id = curr_id - n_lm_genes
+        if x_id >= 0: # non-landmark genes
+            x_corr_grp[x_id] = old_id // grp_size
+    noise_mtx = noise_mtx[:, rev_idx]
+    mtx = orig_mtx + noise_mtx
+    # extract the genes correlated with the lm genes
+    # identify the group of the lm genes
+#     lm_cor_grp_idx = []
+    x_lm_corr = np.array([False] * x.shape[1])
+    for i in range(n_lm_genes):
+        noise_idx = rev_idx[i]
+        # find the group it belongs to and the indices in between
+        grp_id = noise_idx // grp_size
+        grp_beg = grp_id * grp_size
+        grp_end = (grp_id + 1) * grp_size
+        grp_ids = map_idx[grp_beg:grp_end]
+        assert i in grp_ids, '{} not in group'.format(i)
+        grp_ids = grp_ids - n_lm_genes # original index
+        x_lm_corr[grp_ids] = True
+#         lm_cor_grp_idx.append(grp_ids)
+#     new_nn_idx = np.concatenate(lm_cor_grp_idx)
+#     new_nn_idx = new_nn_idx-n_lm_genes 
+#     new_nn_idx = new_nn_idx[new_nn_idx >=0]
+    z = mtx[:, :n_lm_genes]
+    x = mtx[:, n_lm_genes:]
+    # scale the outputs
+    z = norm_mtx(z)
+    x = norm_mtx(x)
+
+    # true/false correlated with lm genes
+    df = pd.DataFrame({'corr_grp': x_corr_grp, 'lm_corr': x_lm_corr})
+    return z, x, df
+
+def selction_eval(result, lam_true, sim_params, var_df):
+    x_param = sim_params["x_param"]
+    n_proto = len(x_param["spike_grp"])
+    n_rep = x_param["n_repetitions"] * len(x_param["rel_noise_list"])
+    nn_idx = np.arange(n_rep*n_proto)
+    new_nn_idx = var_df.loc[var_df['lm_corr']].sort_values('corr_grp')['var_id']
+    nn_set = set(nn_idx).union(set(new_nn_idx))
+    # add the correlated noise variables to the FDR
+    rej_idx = result["rejections"]
+    mt_res = evaluate_rejections(set(rej_idx), nn_set)
+    mt_res["Corr"] = abs(spearmanr(result["lam_update"], lam_true).correlation) 
+    mt_res["Num_Nonnulls"] = len(nn_set)
+    mt_res["Num_Rejections"] = len(rej_idx)
+    print(mt_res)
+    

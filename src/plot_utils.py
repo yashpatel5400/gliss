@@ -23,12 +23,16 @@ import matplotlib.patches as patches
 from sim_utils import generate_spike_mtx
 import itertools
 
+from sklearn.metrics import pairwise_distances
+
 
 from sim_utils import add_gaussian_noise, add_uniform_noise, generate_spike_mtx
 from sim_utils import get_sim_params, generate_x_mtx
 from graph_utils import get_laplacian, laplacian_score
 from general_utils import extended_bounds, rank_and_bin
 from main_methods import setup_cmp_df
+from general_utils import evaluate_rejections
+
 
 
 logger = logging.getLogger("feat_viz")
@@ -1439,3 +1443,49 @@ def plot_gene_expr_comp(lam_df, gene_df, methods, aliases, horizontal=False, fon
         logger.info("Saved figure to: {}".format(fn))
     plt.show()
     
+   
+def plot_col_color_heatmap(plt_mtx, grp_ids, lut, val_min=None, val_max=None,
+                           short=False, square=False):
+    feat_cols = pd.Series(grp_ids).map(lut)
+    if val_min:
+        plt_mtx[plt_mtx < val_min] = val_min
+    if val_max:
+        plt_mtx[plt_mtx > val_max] = val_max
+
+    pad_white = pd.Series(np.repeat("#ffffff", len(grp_ids)))
+    if square:
+        figsize=(7, 7)
+        shared_cols = [feat_cols] * 10 +  [pad_white] * 1
+        col_colors = shared_cols
+        row_colors = shared_cols
+    else:
+        if short:
+            figsize=(7, 1)
+            col_colors = None
+            row_colors = [pad_white]
+        else:
+            figsize=(7, 3)
+            col_colors = [feat_cols] * 10 +  [pad_white] * 1
+            row_colors = [pad_white]
+   
+    grid = sns.clustermap(plt_mtx, xticklabels=False, yticklabels = False,
+                          row_cluster=False, col_cluster=False, 
+                          col_colors=col_colors, row_colors = row_colors,
+                          figsize=figsize)
+    clear_sns_dendogram(grid)
+    
+    
+def plot_by_noise_struct(var_df, lam_true, x, num_grps = 10):
+    df = var_df.sort_values('corr_grp')
+    df = df.loc[df['corr_grp'] < num_grps]
+    grp_ids = df['corr_grp']
+    grps = np.arange(num_grps)
+    lut = create_color_map(grps, "GnBu", start=0.5, end=1)
+    # plot variables correlated with lm via noise
+    new_nn_idx = var_df.loc[var_df['lm_corr']].sort_values('corr_grp')['var_id']
+    plot_ground_truth_heatmap(lam_true, x[:, new_nn_idx])
+    # plot the top 10 correlation groups
+    corr_cols = x[:, df['var_id']]
+    plot_ground_truth_heatmap(lam_true, corr_cols)
+    dist_feat = pairwise_distances(corr_cols.T, metric="euclidean") ** 2
+    plot_col_color_heatmap(dist_feat, grp_ids, lut, square=True)

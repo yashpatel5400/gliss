@@ -197,18 +197,26 @@ def flag_complete(data_dir, action, sufx=None):
     if action == "check":
         return os.path.exists(filename)
     
+    
+def load_single_result(RDIR, method, mtype):
+    fn =  "result_{}_{}.plk".format(method, mtype)
+    fn = os.path.join(RDIR, fn)
+    if os.path.exists(fn):
+        out = pickle.load(open(fn, "rb"))
+    else:
+        logger.warning("{} does not exist".format(fn))
+        out = None
+    return out
+    
 def load_all_pipeline_results(RDIR):
     # for the pipeline methods
     pipe_res = {}
     for method in ["pc", "graph", "hybrid"]:
         for mtype in ["vanilla", "oracle"]:
             key = "{}_{}".format(method, mtype)
-            fn =  "result_{}_{}.plk".format(method, mtype)
-            fn = os.path.join(RDIR, fn)
-            if os.path.exists(fn):
-                pipe_res[key] = pickle.load(open(fn, "rb"))
-            else:
-                logger.warning("{} does not exist".format(fn))
+            result = load_single_result(RDIR, method, mtype)
+            if result:
+                pipe_res[key] = result
     # for the unsupervised methods        
     all_lams = {}
     for method in ["graph", "pc"]:

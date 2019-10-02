@@ -10,6 +10,8 @@ from pcurve_utils import initial_pcurve
 from graph_utils import construct_kernal_graph, construct_knn_naive
 from graph_utils import laplacian_score, get_graph_spectrum
 from scipy.stats import spearmanr, pearsonr
+import umap
+
 
 logger = logging.getLogger("feat_viz")
 
@@ -246,3 +248,33 @@ def get_unique_rejection_df(res_dict, var_df):
     df_comp = pd.concat(df_list, axis=0) # should never conflict
     df_dict = dict(zip(mets, df_list))
     return df_dict, df_comp
+
+def compute_embedding(mtx, sel_idx=None):
+    uobj = umap.UMAP(random_state=10101)
+    if sel_idx is None:
+        sel_idx = np.arange(mtx.shape[0])
+    print("input dimension: {}".format(mtx[sel_idx, :].shape))
+    embedding = uobj.fit_transform(mtx[sel_idx, :])
+    df = pd.DataFrame(embedding, columns=["umap 1", "umap 2"])
+    df["id"] = sel_idx
+    return df
+
+def compute_all_embeddings(result, c_mtx, x):
+    embed_dict = {}
+    sel_list = ["all", "rejected"]
+    mat_list = ["coeffient", "expression"]
+    for sel in sel_list:
+        if sel == "rejected":
+            sel_idx = result["rejections"]
+        else:
+            sel_idx = None
+        for mat in mat_list:
+            if mat == "coeffient":
+                in_mtx = c_mtx
+            else:
+                in_mtx = x.T
+            key = "{}_{}".format(sel, mat)
+            print("Computing embedding for: {}".format(key))
+            df = compute_embedding(in_mtx, sel_idx=sel_idx)
+            embed_dict[key] = df
+    return embed_dict

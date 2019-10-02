@@ -1056,7 +1056,7 @@ def run_pipeline_nnvars(params,
 # simulation for correlation analysis
 def get_corr_sim(sim_id = "corr_sim", regime=0):
     if regime == 0:
-        corr_value = 0.1
+        corr_value = 0.01
     elif regime == 1:
         corr_value = 0.2
     elif regime == 2:

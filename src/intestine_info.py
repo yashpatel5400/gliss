@@ -148,3 +148,17 @@ def load_original_entero_zonation(just_vals=False):
         logger.info("{}".format(mapping))  
         zones = [mapping[v] for v in zones]
     return zones
+
+def load_gene_set_clusters(var_df):
+    dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
+    fn =  os.path.join(dat_dir, "extracted", "kmeans_meta.csv")
+    kdf = pd.read_csv(fn)
+    fn =  os.path.join(dat_dir, "extracted", "kmeans_data.csv")
+    kmtx = pd.read_csv(fn, header=None).values
+    kdf['curr_idx'] = kdf.index
+    kdf = kdf.set_index('gene_name')
+    gdf = var_df[['gene_ids']].copy()
+    gdf['orig_idx'] = gdf.index
+    gdf = gdf.set_index('gene_ids')
+    kdf['orig_idx'] = gdf.loc[kdf.index]['orig_idx']
+    return kmtx, kdf

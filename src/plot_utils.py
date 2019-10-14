@@ -9,7 +9,7 @@ import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 
-from matplotlib_venn import venn2
+from matplotlib_venn import venn2, venn3
 
 import seaborn as sns
 import networkx as nx
@@ -1476,8 +1476,13 @@ def plot_col_color_heatmap(plt_mtx, grp_ids, lut, val_min=None, val_max=None,
     clear_sns_dendogram(grid,  cax_visible=True)
     
 
-def get_sim_color_map(grp_ids):    
-    lut = create_color_map(grp_ids[grp_ids>=0], "tab10")
+def get_sim_color_map(grp_ids, palette="tab10"):    
+#     lut = create_color_map(grp_ids[grp_ids>=0], palette)
+    pos_int_ids = np.unique(grp_ids[grp_ids>=0])
+    cols = sns.color_palette(palette, len(pos_int_ids))
+    lut = {}
+    for i, val in enumerate(pos_int_ids):
+        lut[val] = cols[i]
     lut[-1] = (0.5, 0.5, 0.5)
     return lut
    
@@ -1497,3 +1502,20 @@ def plot_by_noise_struct(var_df, lam_true, x, order_by_noise=True, num_grps = 5)
 #     plot_ground_truth_heatmap(lam_true, corr_cols)
     dist_feat = pairwise_distances(corr_cols.T, metric="euclidean")
     plot_col_color_heatmap(dist_feat, grp_ids, lut, square=True)
+
+    
+    
+def plot_venn(gset, keys, fn=None, ax=None):
+    vals = [gset[k] for k in keys]
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=(4,4))
+    if len(keys) == 2:
+        vd = venn2(vals, keys, ax=ax)
+    if len(keys) == 3:
+        vd = venn3(vals, keys, ax=ax)
+    if ax is None:
+        if fn:
+            fn = '/scratch/users/jjzhu/tmp_fig/entero_venn.pdf'
+            plt.savefig(fn, bbox_inches='tight') 
+            logger.info("Saved figure to: {}".format(fn))
+        plt.show()

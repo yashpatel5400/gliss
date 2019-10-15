@@ -1519,3 +1519,22 @@ def plot_venn(gset, keys, fn=None, ax=None):
             plt.savefig(fn, bbox_inches='tight') 
             logger.info("Saved figure to: {}".format(fn))
         plt.show()
+        
+        
+def plot_multiple_scatter_discrete(embedding, clust_df):
+    methods = clust_df.columns
+    fig, axes = plt.subplots(1, len(methods), figsize=(2.9*len(methods)-0.2*(len(methods)-1),2.7))    
+    for i, met in enumerate(methods):
+        if len(methods) == 1:
+            ax = axes
+        else:
+            ax = axes[i]
+        lut = get_sim_color_map(clust_df[met], palette='tab10')
+        plot_scatter_discrete(embedding, 
+                              clust_df[met], cols=lut,
+                              ax=ax, ms=1)
+        ax.set_title(met)
+        ax.set_xlabel('umap 1')
+        ax.set_ylabel('umap 2')
+    plt.tight_layout()
+    plt.show()

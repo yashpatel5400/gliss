@@ -1538,3 +1538,8 @@ def plot_multiple_scatter_discrete(embedding, clust_df):
         ax.set_ylabel('umap 2')
     plt.tight_layout()
     plt.show()
+    
+def plot_multi_curves(ax, x, y_mtx, **kwargs):
+    assert len(x) == y_mtx.shape[0], "dimension mismatch"
+    for i in range(y_mtx.shape[1]):
+        ax.plot(x, y_mtx[:,i], **kwargs)

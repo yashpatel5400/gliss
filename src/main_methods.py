@@ -11,6 +11,7 @@ from graph_utils import construct_kernal_graph, construct_knn_naive
 from graph_utils import laplacian_score, get_graph_spectrum
 from scipy.stats import spearmanr, pearsonr
 import umap
+from patsy import dmatrix
 
 import scipy
 from scipy.sparse import csgraph
@@ -287,89 +288,96 @@ def compute_all_embeddings(result, c_mtx, x):
             embed_dict[key] = df
     return embed_dict
 
-def optimalK(data, nrefs=3, maxClusters=20):
-    """
-    Calculates KMeans optimal K using Gap Statistic from Tibshirani, Walther, Hastie
-    Params:
-        data: ndarry of shape (n_samples, n_features)
-        nrefs: number of sample reference datasets to create
-        maxClusters: Maximum number of clusters to test for
-    Returns: (gaps, optimalK)
+# def optimalK(data, nrefs=3, maxClusters=20):
+#     """
+#     Calculates KMeans optimal K using Gap Statistic from Tibshirani, Walther, Hastie
+#     Params:
+#         data: ndarry of shape (n_samples, n_features)
+#         nrefs: number of sample reference datasets to create
+#         maxClusters: Maximum number of clusters to test for
+#     Returns: (gaps, optimalK)
     
-    # Source: https://anaconda.org/milesgranger/gap-statistic/notebook
-    """
-    gaps = np.zeros((len(range(1, maxClusters)),))
-    resultsdf = pd.DataFrame({'clusterCount':[], 'gap':[]})
-    for gap_index, k in enumerate(range(1, maxClusters)):
+#     # Source: https://anaconda.org/milesgranger/gap-statistic/notebook
+#     """
+#     gaps = np.zeros((len(range(1, maxClusters)),))
+#     resultsdf = pd.DataFrame({'clusterCount':[], 'gap':[]})
+#     for gap_index, k in enumerate(range(1, maxClusters)):
 
-        # Holder for reference dispersion results
-        refDisps = np.zeros(nrefs)
+#         # Holder for reference dispersion results
+#         refDisps = np.zeros(nrefs)
 
-        # For n references, generate random sample and perform kmeans getting resulting dispersion of each loop
-        for i in range(nrefs):
+#         # For n references, generate random sample and perform kmeans getting resulting dispersion of each loop
+#         for i in range(nrefs):
             
-            # Create new random reference set
-            randomReference = np.random.random_sample(size=data.shape)
+#             # Create new random reference set
+#             randomReference = np.random.random_sample(size=data.shape)
             
-            # Fit to it
-            km = KMeans(k)
-            km.fit(randomReference)
+#             # Fit to it
+#             km = KMeans(k)
+#             km.fit(randomReference)
             
-            refDisp = km.inertia_
-            refDisps[i] = refDisp
+#             refDisp = km.inertia_
+#             refDisps[i] = refDisp
 
-        # Fit cluster to original data and create dispersion
-        km = KMeans(k)
-        km.fit(data)
+#         # Fit cluster to original data and create dispersion
+#         km = KMeans(k)
+#         km.fit(data)
         
-        origDisp = km.inertia_
+#         origDisp = km.inertia_
 
-        # Calculate gap statistic
-        gap = np.log(np.mean(refDisps)) - np.log(origDisp)
+#         # Calculate gap statistic
+#         gap = np.log(np.mean(refDisps)) - np.log(origDisp)
 
-        # Assign this loop's gap statistic to gaps
-        gaps[gap_index] = gap
+#         # Assign this loop's gap statistic to gaps
+#         gaps[gap_index] = gap
         
-        resultsdf = resultsdf.append({'clusterCount':k, 'gap':gap}, ignore_index=True)
+#         resultsdf = resultsdf.append({'clusterCount':k, 'gap':gap}, ignore_index=True)
 
-    return (gaps.argmax() + 1, resultsdf)  # Plus 1 because index of 0 means 1 cluster is optimal, index 2 = 3 clusters are optimal
+#     return (gaps.argmax() + 1, resultsdf)  # Plus 1 because index of 0 means 1 cluster is optimal, index 2 = 3 clusters are optimal
 
 
-def graph_eig_decomp(A, plot = True, topK = 5, max_clust=10):
-    """
-    :param A: Affinity matrix
-    :param plot: plots the sorted eigen values for visual inspection
-    :return A tuple containing:
-    - the optimal number of clusters by eigengap heuristic
-    - all eigen values
-    - all eigen vectors
+# def graph_eig_decomp(A, plot = True, topK = 5, max_clust=10):
+#     """
+#     :param A: Affinity matrix
+#     :param plot: plots the sorted eigen values for visual inspection
+#     :return A tuple containing:
+#     - the optimal number of clusters by eigengap heuristic
+#     - all eigen values
+#     - all eigen vectors
     
-    This method performs the eigen decomposition on a given affinity matrix,
-    following the steps recommended in the paper:
-    1. Construct the normalized affinity matrix: L = D−1/2ADˆ −1/2.
-    2. Find the eigenvalues and their associated eigen vectors
-    3. Identify the maximum gap which corresponds to the number of clusters
-    by eigengap heuristic
+#     This method performs the eigen decomposition on a given affinity matrix,
+#     following the steps recommended in the paper:
+#     1. Construct the normalized affinity matrix: L = D−1/2ADˆ −1/2.
+#     2. Find the eigenvalues and their associated eigen vectors
+#     3. Identify the maximum gap which corresponds to the number of clusters
+#     by eigengap heuristic
     
-    References:
-    https://papers.nips.cc/paper/2619-self-tuning-spectral-clustering.pdf
-    http://www.kyb.mpg.de/fileadmin/user_upload/files/publications/attachments/Luxburg07_tutorial_4488%5b0%5d.pdf
-    """
-    L = csgraph.laplacian(A)
-#     n_components = A.shape[0]
-    # LM parameter : Eigenvalues with largest magnitude (eigs, eigsh), that is, largest eigenvalues in 
-    # the euclidean norm of complex numbers.
-#     eigenvalues, eigenvectors = eigsh(L, k=100, which="LM", sigma=1.0, maxiter=5000)
-#     eigenvalues, eigenvectors = eigh(L) 
-    eigenvalues, eigenvectors = eigsh(L, which = 'SM', k=max_clust)
-#     if plot:
-#         plt.title('Largest eigen values of input matrix')
-#         plt.scatter(np.arange(len(eigenvalues)), eigenvalues)
-#         plt.grid()
+#     References:
+#     https://papers.nips.cc/paper/2619-self-tuning-spectral-clustering.pdf
+#     http://www.kyb.mpg.de/fileadmin/user_upload/files/publications/attachments/Luxburg07_tutorial_4488%5b0%5d.pdf
+#     """
+#     L = csgraph.laplacian(A)
+# #     n_components = A.shape[0]
+#     # LM parameter : Eigenvalues with largest magnitude (eigs, eigsh), that is, largest eigenvalues in 
+#     # the euclidean norm of complex numbers.
+# #     eigenvalues, eigenvectors = eigsh(L, k=100, which="LM", sigma=1.0, maxiter=5000)
+# #     eigenvalues, eigenvectors = eigh(L) 
+#     eigenvalues, eigenvectors = eigsh(L, which = 'SM', k=max_clust)
+# #     if plot:
+# #         plt.title('Largest eigen values of input matrix')
+# #         plt.scatter(np.arange(len(eigenvalues)), eigenvalues)
+# #         plt.grid()
         
-    # Identify the optimal number of clusters as the index corresponding
-    # to the larger gap between eigen values
-    index_largest_gap = np.argsort(np.diff(eigenvalues))[::-1][:topK]
-    nb_clusters = index_largest_gap + 1
+#     # Identify the optimal number of clusters as the index corresponding
+#     # to the larger gap between eigen values
+#     index_largest_gap = np.argsort(np.diff(eigenvalues))[::-1][:topK]
+#     nb_clusters = index_largest_gap + 1
         
-    return nb_clusters, eigenvalues, eigenvectors
+#     return nb_clusters, eigenvalues, eigenvectors
+
+def refit_curves(coeff_mtx, base_args, x):
+    x = np.linspace(min(x), max(x), 50)
+    exog = dmatrix(base_args, {"x": x}, return_type='dataframe')
+    y = np.matmul(exog.values, coeff_mtx.T)
+    logger.info("Fitted points stored in {}".format(y.shape))
+    return x, y

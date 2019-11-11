@@ -4,6 +4,7 @@ import json
 import os
 import pickle
 import logging
+from ast import literal_eval
 
 logger = logging.getLogger("feat_viz")
 
@@ -78,3 +79,77 @@ def evaluate_rejections(reject_set, nonnull_set):
     out_dict["FDP"] = 1.0 * n_false_pos / max(len(reject_set), 1)
     out_dict["Power"] = 1.0 * n_true_pos / max(len(nonnull_set), 1)
     return out_dict
+
+
+def read_spatial_expression(file,sep='\s+',num_exp_genes=0.01, num_exp_spots=0.01, min_expression=1):
+    
+    '''
+    Read raw data and returns pandas data frame of spatial gene express
+    and numpy ndarray for single cell location coordinates; 
+    Meanwhile processing raw data.
+    
+    :param file: csv file for spatial gene expression; 
+    :rtype: coord (spatial coordinates) shape (n, 2); data: shape (n, m); 
+    '''
+    counts = pd.read_csv(file, sep=sep, index_col = 0)
+    print('raw data dim: {}'.format(counts.shape))
+
+    num_spots = len(counts.index)
+    num_genes = len(counts.columns)
+    min_genes_spot_exp = round((counts != 0).sum(axis=1).quantile(num_exp_genes))
+#     print("Number of expressed genes a spot must have to be kept " \
+#     "({}% of total expressed genes) {}".format(num_exp_genes, min_genes_spot_exp))
+    counts = counts[(counts != 0).sum(axis=1) >= min_genes_spot_exp]
+#     print("Dropped {} spots".format(num_spots - len(counts.index)))
+          
+    # Spots are columns and genes are rows
+    counts = counts.transpose()
+  
+    # Remove noisy genes
+    min_features_gene = round(len(counts.columns) * num_exp_spots) 
+#     print("Removing genes that are expressed in less than {} " \
+#     "spots with a count of at least {}".format(min_features_gene, min_expression))
+    counts = counts[(counts >= min_expression).sum(axis=1) >= min_features_gene]
+#     print("Dropped {} genes".format(num_genes - len(counts.index)))
+    
+    data=counts.transpose()
+    temp = [val.split('x') for val in data.index.values]
+    coord = np.array([[float(a[0]), float(a[1])] for a in temp])
+    
+    return coord,data
+
+
+
+
+def normalize_count_cellranger(data):
+    '''
+    normalize count as in cellranger
+    
+    :param file: data: A dataframe of shape (m, n);
+    :rtype: data shape (m, n);
+    '''
+    normalizing_factor = np.sum(data, axis = 1)/np.median(np.sum(data, axis = 1))
+    data = pd.DataFrame(data.values/normalizing_factor[:,np.newaxis], columns=data.columns, index=data.index)
+    return data
+
+def read_result_to_dataframe(fileName,sep=','):
+    
+    '''
+    Read and use scGCO output file cross-platform .
+    More detail can see **write_result_to_csv()**.
+    '''
+    converters={"p_value":converter,"nodes":converter}
+    df=pd.read_csv(fileName,converters=converters,index_col=0,sep=sep)
+    df.nodes=df.nodes.apply(conver_array)
+    return df
+
+def conver_list(x):
+    return [list(xx) for xx in x ]
+
+def conver_array(x):
+    return [np.array(xx) for xx in x] 
+
+def converter(x):
+    #define format of datetime
+    return literal_eval(x)
+

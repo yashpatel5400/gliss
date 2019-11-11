@@ -207,6 +207,18 @@ def run_procedure(x_k, x_d, params, lam_in=None, fn=None):
         pickle.dump(result, open(fn, "wb"))
     return result
 
+def select_spatial_genes(locs, data_mtx, knn=6, alpha=0.05, n_perm=10000):
+    '''
+    Given spatial coordinates in columns of locs select column indices of data_norm
+    '''
+    assert locs.shape[0] == data_mtx.shape[0], 'number of sampels mismatch'
+    in_mtx = norm_mtx(locs, verbose=False)
+    graph = construct_knn_naive(locs, k=knn)
+    pvals = compute_feature_pvals('graph', data_mtx, graph, n_perm, 'pool', seed=0)
+    rej_idx = multitest_rejections(pvals, alpha, method="BH")
+    return pvals, rej_idx
+    
+
 def run_unsupervised(x_k, x_d, params, fn=None):
     method = params["method"]
     assert method in ["graph", "pc"], "{} not defined".format(method)
@@ -218,6 +230,9 @@ def run_unsupervised(x_k, x_d, params, fn=None):
         pickle.dump(new_lam_hat, open(fn, "wb"))
     return new_lam_hat
     
+    
+    
+
 def evaluate_result(result, lam_ref=None, rej_ref=None):
     logger.info("Number of selected variables: {}".format(len(result["rejections"])))
     if lam_ref:
@@ -336,44 +351,6 @@ def optimalK(data, nrefs=3, maxClusters=20):
     return (gaps.argmax() + 1, resultsdf)  # Plus 1 because index of 0 means 1 cluster is optimal, index 2 = 3 clusters are optimal
 
 
-# def graph_eig_decomp(A, plot = True, topK = 5, max_clust=10):
-#     """
-#     :param A: Affinity matrix
-#     :param plot: plots the sorted eigen values for visual inspection
-#     :return A tuple containing:
-#     - the optimal number of clusters by eigengap heuristic
-#     - all eigen values
-#     - all eigen vectors
-    
-#     This method performs the eigen decomposition on a given affinity matrix,
-#     following the steps recommended in the paper:
-#     1. Construct the normalized affinity matrix: L = D−1/2ADˆ −1/2.
-#     2. Find the eigenvalues and their associated eigen vectors
-#     3. Identify the maximum gap which corresponds to the number of clusters
-#     by eigengap heuristic
-    
-#     References:
-#     https://papers.nips.cc/paper/2619-self-tuning-spectral-clustering.pdf
-#     http://www.kyb.mpg.de/fileadmin/user_upload/files/publications/attachments/Luxburg07_tutorial_4488%5b0%5d.pdf
-#     """
-#     L = csgraph.laplacian(A)
-# #     n_components = A.shape[0]
-#     # LM parameter : Eigenvalues with largest magnitude (eigs, eigsh), that is, largest eigenvalues in 
-#     # the euclidean norm of complex numbers.
-# #     eigenvalues, eigenvectors = eigsh(L, k=100, which="LM", sigma=1.0, maxiter=5000)
-# #     eigenvalues, eigenvectors = eigh(L) 
-#     eigenvalues, eigenvectors = eigsh(L, which = 'SM', k=max_clust)
-# #     if plot:
-# #         plt.title('Largest eigen values of input matrix')
-# #         plt.scatter(np.arange(len(eigenvalues)), eigenvalues)
-# #         plt.grid()
-        
-#     # Identify the optimal number of clusters as the index corresponding
-#     # to the larger gap between eigen values
-#     index_largest_gap = np.argsort(np.diff(eigenvalues))[::-1][:topK]
-#     nb_clusters = index_largest_gap + 1
-        
-#     return nb_clusters, eigenvalues, eigenvectors
 
 def refit_curves(coeff_mtx, base_args, x):
     x = np.linspace(min(x), max(x), 50)

@@ -990,12 +990,12 @@ def plot_scatter_continuous(projected, values, ax, logscale=True, ms=5, sortvals
     if sortvals:
         df = df.sort_values(by="val")
     # matplotlib plotting
-    if np.sum(df["val"]) == 0:
-        vmin = 0
-        vmax = 1
-    else:
-        vmin = np.min(df["val"])
-        vmax = np.max(df["val"])
+#     if np.sum(df["val"]) == 0:
+#         vmin = 0
+#         vmax = 1
+#     else:
+    vmin = np.min(df["val"])
+    vmax = np.max(df["val"])
     scat = ax.scatter(df["dim1"], df["dim2"], c=df["val"], 
                 # edgecolor="#383838", 
                 vmin=vmin, vmax=vmax,
@@ -1536,6 +1536,15 @@ def plot_multiple_scatter_discrete(embedding, clust_df):
         ax.set_title(met)
         ax.set_xlabel('umap 1')
         ax.set_ylabel('umap 2')
+    plt.tight_layout()
+    plt.show()
+        
+def plot_multiple_scatter_continuous(embed_df, plt_df, logscale=False):
+    n_plts = plt_df.shape[1]
+    fig, axes = plt.subplots(1, n_plts, figsize=(n_plts*3, 2.5))
+    for i, col in enumerate(plt_df.columns):
+        ax = axes[i]
+        plot_scatter_continuous(embed_df, plt_df[col], ax, logscale=logscale)
     plt.tight_layout()
     plt.show()
     

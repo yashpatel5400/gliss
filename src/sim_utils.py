@@ -1172,3 +1172,45 @@ def selction_eval(result, lam_true, sim_params, var_df):
     mt_res["Num_Rejections"] = len(rej_idx)
     print(mt_res)
     
+    
+# For spatial simulation
+def gen_2D_pattern(name, x, y, param=None):
+    if param is None:
+        if name == 'cosine':
+            n = 2
+        else:
+            n = 1
+    else:
+        n = param
+    if name == 'radial':
+        vals = - np.sqrt(x ** 2 + y ** 2)
+        vals[vals < n] = n
+    if name == 'linear':
+        vals = (x + y)
+        vals[vals < n] = n
+    if name == 'diaquad':
+        vals = - np.sqrt((x + y) ** 2)
+        vals[vals < n] = n
+    if name == 'cosine':
+        vals = (1/2) ** n * (np.cos(2**n * x) + np.cos(2**n * y))
+    vals = vals - np.min(vals)
+    return vals
+
+def multi_2D_pattern(name, x, y, n_regimes=4):    
+    scale = 0.5
+    if name == 'cosine':
+        params = np.arange(2, 2+n_regimes)
+        scale = 2
+    elif name == 'linear':
+        params = [-2] + list(np.linspace(0, 2, n_regimes))[:-1]
+    elif name == 'diaquad':
+        params = list(np.linspace(-2, -0.3, n_regimes))
+    elif name == 'radial':
+        params = list(np.linspace(-2, -0.3, n_regimes))
+        scale = 1
+    else:
+        params = np.logspace(1, 0.01, n_regimes)
+    mtx = np.zeros((len(x), n_regimes))
+    for i, p in enumerate(params):
+        mtx[:, i] = gen_2D_pattern(name, x, y, param=p) * scale
+    return mtx

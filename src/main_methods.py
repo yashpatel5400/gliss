@@ -358,3 +358,21 @@ def refit_curves(coeff_mtx, base_args, x):
     y = np.matmul(exog.values, coeff_mtx.T)
     logger.info("Fitted points stored in {}".format(y.shape))
     return x, y
+
+
+def graph_spectrum(A, n_eigs=20):
+    L = csgraph.laplacian(A)
+    eigenvalues, eigenvectors = eigsh(L, which='SM', k=n_eigs)
+    return eigenvalues, eigenvectors
+
+def graph_clustering(eigenvectors, k_vals):   
+#     k_vals = [4, 5, 6, 7, 8, 9, 10, 11, 12]
+#     X = eigenvectors[:, 1:]
+    df = pd.DataFrame()
+    for n_clust in k_vals:
+        X = eigenvectors[:, 1:(n_clust+1)]
+        kmeans = KMeans(n_clusters=n_clust, random_state=0).fit(X)
+        labs = kmeans.labels_
+        name = 'k_{}'.format(n_clust)
+        df[name] = labs
+    return df

@@ -1008,7 +1008,7 @@ def plot_scatter_continuous(projected, values, ax, logscale=True, ms=5, sortvals
     plt.colorbar(scat, ax=ax, format=FormatStrFormatter('%.1f'))
     return scat 
 
-def plot_scatter_discrete(projected, labels, ax, ms=5, cols="Spectral"):
+def plot_scatter_discrete(projected, labels, ax, ms=5, cols="Spectral", orientation='vertical'):
     projected = np.array(projected)
     x = projected[:, 0]
     y = projected[:, 1]
@@ -1028,7 +1028,7 @@ def plot_scatter_discrete(projected, labels, ax, ms=5, cols="Spectral"):
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
     scat = ax.scatter(x, y, c=c, s=ms, cmap=cmap, norm=norm)
-    cb = plt.colorbar(scat, spacing='proportional',ticks=bounds+0.5, ax=ax)
+    cb = plt.colorbar(scat, spacing='proportional',ticks=bounds+0.5, ax=ax, orientation=orientation)
     cb.set_ticklabels(labs)
     
     ax.spines['right'].set_visible(False)
@@ -1513,15 +1513,14 @@ def plot_venn(gset, keys, fn=None, ax=None):
         vd = venn2(vals, keys, ax=ax)
     if len(keys) == 3:
         vd = venn3(vals, keys, ax=ax)
+    if fn:
+        plt.savefig(fn, bbox_inches='tight', transparent=True) 
+        logger.info("Saved figure to: {}".format(fn))
     if ax is None:
-        if fn:
-            fn = '/scratch/users/jjzhu/tmp_fig/entero_venn.pdf'
-            plt.savefig(fn, bbox_inches='tight') 
-            logger.info("Saved figure to: {}".format(fn))
         plt.show()
         
         
-def plot_multiple_scatter_discrete(embedding, clust_df):
+def plot_multiple_scatter_discrete(embedding, clust_df, palette='tab10'):
     methods = clust_df.columns
     fig, axes = plt.subplots(1, len(methods), figsize=(2.9*len(methods)-0.2*(len(methods)-1),2.7))    
     for i, met in enumerate(methods):
@@ -1529,7 +1528,7 @@ def plot_multiple_scatter_discrete(embedding, clust_df):
             ax = axes
         else:
             ax = axes[i]
-        lut = get_sim_color_map(clust_df[met], palette='tab10')
+        lut = get_sim_color_map(clust_df[met], palette=palette)
         plot_scatter_discrete(embedding, 
                               clust_df[met], cols=lut,
                               ax=ax, ms=1)

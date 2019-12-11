@@ -122,12 +122,14 @@ def split_by_lm_genes(genes, var_df, mtx):
     new_df = var_df.set_index("gene_ids")
     anchor = var_df['gene_ids'].isin(genes)
     return mtx[:, anchor], mtx[:, -anchor]
-    
 
 def get_gene_df(genes, var_df, mtx):
-    new_df = var_df.set_index("gene_ids")
-    inds = [int(var_df.index[var_df["gene_ids"]==g][0]) for g in genes]
-    sub_mtx = mtx[:, inds]
-    sub_df = pd.DataFrame(sub_mtx, columns=genes)
+    int_genes = set(genes).intersection(set(var_df.gene_ids))
+    print('Intersection ({}, {}) -> {}'.format(len(genes), len(var_df.gene_ids), len(int_genes)))
+    var_df['orig_idx'] = var_df.index
+    new_df = var_df.set_index("gene_ids").loc[int_genes]
+#     inds = [int(var_df.index[var_df["gene_ids"]==g][0]) for g in genes]
+    sub_mtx = mtx[:, new_df['orig_idx']]
+    sub_df = pd.DataFrame(sub_mtx, columns=new_df.index)
     logger.info("x_star_df dim: {}".format(sub_df.shape))
     return sub_df

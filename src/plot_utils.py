@@ -1008,7 +1008,9 @@ def plot_scatter_continuous(projected, values, ax, logscale=True, ms=5, sortvals
     plt.colorbar(scat, ax=ax, format=FormatStrFormatter('%.1f'))
     return scat 
 
-def plot_scatter_discrete(projected, labels, ax, ms=5, cols="Spectral", orientation='vertical'):
+def plot_scatter_discrete(projected, labels, ax, ms=5, cols="Spectral", 
+                          orientation='vertical', alpha=1,
+                          color_bar=True):
     projected = np.array(projected)
     x = projected[:, 0]
     y = projected[:, 1]
@@ -1026,10 +1028,11 @@ def plot_scatter_discrete(projected, labels, ax, ms=5, cols="Spectral", orientat
 #     cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
     bounds = np.linspace(0,len(labs),len(labs)+1)
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-
-    scat = ax.scatter(x, y, c=c, s=ms, cmap=cmap, norm=norm)
-    cb = plt.colorbar(scat, spacing='proportional',ticks=bounds+0.5, ax=ax, orientation=orientation)
-    cb.set_ticklabels(labs)
+    scat = ax.scatter(x, y, c=c, s=ms, cmap=cmap, norm=norm, alpha=alpha, edgecolors='none')
+    if color_bar:
+        cb = plt.colorbar(scat, spacing='proportional',ticks=bounds+0.5, 
+                          ax=ax, orientation=orientation)
+        cb.set_ticklabels(labs)
     
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
@@ -1325,7 +1328,7 @@ def plot_and_compare_results(res_dict, plot_pvals=False):
             ax.set_title(met)
         plt.show()
         
-def plot_corr_mtx(df, plain=False, fn=None, vmin=0, vmax=1):
+def plot_corr_mtx(df, plain=False, fn=None, vmin=0, vmax=1, half=False):
     corr_df = df.corr('spearman')
     if plain:
         fig, ax = plt.subplots(1, 1, figsize=(3.2,3.2))
@@ -1333,9 +1336,14 @@ def plot_corr_mtx(df, plain=False, fn=None, vmin=0, vmax=1):
     else:
         fig, ax = plt.subplots(1, 1, figsize=(5, 5))
         show_cbar = True
+    if half:
+        mask = np.zeros_like(corr_df)
+        mask[np.triu_indices_from(mask, k=1)] = True
+    else:
+        mask = None
     sns.heatmap(corr_df, annot=True, fmt=".2f", square=True, ax=ax,
                 cbar=show_cbar, cbar_kws={"shrink": .8}, 
-                vmin=vmin, vmax=vmax)
+                vmin=vmin, vmax=vmax, mask=mask)
     if plain:
         ax.set_xticks([])
         ax.set_yticks([])

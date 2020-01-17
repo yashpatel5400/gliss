@@ -1453,7 +1453,7 @@ def plot_gene_expr_comp(lam_df, gene_df, methods, aliases, horizontal=False, fon
     
    
 def plot_col_color_heatmap(plt_mtx, grp_ids, lut, val_min=None, val_max=None,
-                           short=False, square=False):
+                           short=False, square=False, cmap="viridis"):
     feat_cols = pd.Series(grp_ids).map(lut)
     if val_min:
         plt_mtx[plt_mtx < val_min] = val_min
@@ -1480,7 +1480,7 @@ def plot_col_color_heatmap(plt_mtx, grp_ids, lut, val_min=None, val_max=None,
     grid = sns.clustermap(plt_mtx, xticklabels=False, yticklabels = False,
                           row_cluster=False, col_cluster=False, 
                           col_colors=col_colors, row_colors = row_colors,
-                          figsize=figsize)
+                          figsize=figsize, cmap=cmap)
     clear_sns_dendogram(grid,  cax_visible=True)
     
 

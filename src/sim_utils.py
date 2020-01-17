@@ -1157,6 +1157,21 @@ def model_corr_noise(null_struct, z, x):
     df = pd.DataFrame({'corr_grp': x_corr_grp, 'lm_corr': x_lm_corr})
     return z, x, df
 
+def main_corr_sim_evaluation(rej_idx, sim_params, var_df):
+    x_param = sim_params["x_param"]
+    n_proto = len(x_param["spike_grp"])
+    n_rep = x_param["n_repetitions"] * len(x_param["rel_noise_list"])
+    nn_idx = np.arange(n_rep*n_proto)
+    new_nn_idx = var_df.loc[var_df['lm_corr']].sort_values('corr_grp')['var_id']
+    nn_set = set(nn_idx).union(set(new_nn_idx))
+    # add the correlated noise variables to the FDR
+    mt_res = {}
+    mt_res['FDP'] = evaluate_rejections(set(rej_idx), nn_set)['FDP']
+    mt_res['Power'] = evaluate_rejections(set(rej_idx), set(nn_idx))['Power']
+    mt_res["Num_Nonnulls"] = len(nn_set)
+    mt_res["Num_Rejections"] = len(rej_idx)
+    return mt_res
+
 def selction_eval(result, lam_true, sim_params, var_df):
     x_param = sim_params["x_param"]
     n_proto = len(x_param["spike_grp"])
@@ -1166,7 +1181,9 @@ def selction_eval(result, lam_true, sim_params, var_df):
     nn_set = set(nn_idx).union(set(new_nn_idx))
     # add the correlated noise variables to the FDR
     rej_idx = result["rejections"]
-    mt_res = evaluate_rejections(set(rej_idx), nn_set)
+    mt_res = {}
+    mt_res['FDP'] = evaluate_rejections(set(rej_idx), nn_set)['FDP']
+    mt_res['Power'] = evaluate_rejections(set(rej_idx), set(nn_idx))['Power']
     mt_res["Corr"] = abs(spearmanr(result["lam_update"], lam_true).correlation) 
     mt_res["Num_Nonnulls"] = len(nn_set)
     mt_res["Num_Rejections"] = len(rej_idx)

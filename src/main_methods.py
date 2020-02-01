@@ -213,7 +213,10 @@ def select_spatial_genes(locs, data_mtx, knn=6, alpha=0.05, n_perm=10000):
     '''
     assert locs.shape[0] == data_mtx.shape[0], 'number of sampels mismatch'
     in_mtx = norm_mtx(locs, verbose=False)
-    graph = construct_knn_naive(locs, k=knn)
+    if knn > 0:
+        graph = construct_knn_naive(locs, k=knn)
+    else:
+        graph = construct_kernal_graph(locs)
     pvals = compute_feature_pvals('graph', data_mtx, graph, n_perm, 'pool', seed=0)
     rej_idx = multitest_rejections(pvals, alpha, method="BH")
     return pvals, rej_idx

@@ -1231,3 +1231,36 @@ def multi_2D_pattern(name, x, y, n_regimes=4):
     for i, p in enumerate(params):
         mtx[:, i] = gen_2D_pattern(name, x, y, param=p) * scale
     return mtx
+
+
+def complex_eval_spatial_sim(entry, rej_idx):
+    # the total set of non-null indices
+    n_regs = entry['n_regs']
+    n_per_reg = entry['n_per_reg']
+    nn_grp_ids = [i * n_per_reg + np.arange(n_per_reg) for i in range(n_regs)]
+    nn_idx = np.concatenate(nn_grp_ids)
+    # global FDP and Power
+    evals = evaluate_rejections(set(rej_idx), set(nn_idx))
+    # Power breakdown
+    for i, indices in enumerate(nn_grp_ids):
+        key = 'Power-Reg{}'.format(i)
+        ev = evaluate_rejections(set(rej_idx), set(indices))
+        evals[key] = ev['Power']
+#     print('{}-{}: Power: {:.4f}, FDP: {:.4f}'.format(entry['temp'], entry['seed'], 
+#                                               evals['Power'], evals['FDP']))
+    evals['temp'] = entry['temp']
+    evals['seed'] = entry['seed']
+    new_entry = pd.Series(evals, name=entry.name)
+    ls = list(new_entry.index)
+    ls.insert(0, ls.pop(ls.index('temp')))
+    ls.insert(0, ls.pop(ls.index('seed')))
+    new_entry = new_entry.reindex(index=ls)
+#     display(pd.DataFrame(new_entry).T)
+    return new_entry
+
+def read_trial_data(sim_dir, entry):
+    lfn = os.path.join(sim_dir, entry['locs_fn'])
+    locs = load_data_from_file(lfn, 'csv')
+    dfn = os.path.join(sim_dir, entry['expr_fn'])
+    data = load_data_from_file(dfn, 'csv')
+    return locs, data

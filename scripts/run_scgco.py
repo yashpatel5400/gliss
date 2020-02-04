@@ -14,14 +14,13 @@ def read_trial_data(sim_dir, entry):
     data = load_data_from_file(dfn, 'csv')
     return locs, data
     
-sim_dir = '/scratch/PI/sabatti/space_comp_sim/20191030'
-# sim_dir = '/scratch/PI/sabatti/space_comp_sim/20191104'
+sim_dir = '/share/PI/sabatti/feat_viz/space_comp_sim/20191104'
 sim_fn = os.path.join(sim_dir, 'sim_setup.csv')
 sim_df = load_data_from_file(sim_fn, 'csv')
 
 alpha = 0.05
 meth_dir = 'result_scgco'
-cache=True
+cache = True
 just_load=False
 
 
@@ -42,7 +41,7 @@ for i, entry in sim_df.iterrows():
         continue
     if cache and os.path.exists(fn):
         result = load_data_from_file(fn, 'csv')
-        rej_idx = result.loc[result['fdr'] < alpha]
+#         rej_idx = result.loc[result['fdr'] < alpha]
     else:
         sf = estimate_smooth_factor(locs.values, 
                                     data, 
@@ -53,7 +52,7 @@ for i, entry in sim_df.iterrows():
         # save result to file
         save_data_to_file(result, fn, 'csv')        
     # evaluate for tracking
-    rej_idx = np.array(result.loc[result['fdr'] < 0.05].index).astype(int)
+    rej_idx = np.array(result.loc[result['fdr'] < alpha].index).astype(int)
     nn_idx = np.arange(entry['n_per_reg'] * entry['n_regs'])
     evals = evaluate_rejections(set(rej_idx), set(nn_idx))
     print('{}-{}: Power: {:.4f}, FDP: {:.4f}'.format(entry['temp'], entry['seed'], 

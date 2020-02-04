@@ -19,7 +19,7 @@ def read_trial_data(sim_dir, entry):
     data = load_data_from_file(dfn, 'csv')
     return locs, data
     
-sim_dir = '/scratch/PI/sabatti/space_comp_sim/20191104'
+sim_dir = '/share/PI/sabatti/feat_viz/space_comp_sim/20191104'
 sim_fn = os.path.join(sim_dir, 'sim_setup.csv')
 sim_df = load_data_from_file(sim_fn, 'csv')
 print('Loaded parameters: {}'.format(sim_df.shape))

@@ -1,1 +1,3 @@
-# ALOE
+# GLISS
+
+The repo includes the code and notebooks of GLISS, a strategy to analyze spatially-varying genes by integrating two data sources: (1) Spatial Gene Expression (SGE) data such as image-based fluorescence in situ hybridization techniques, and (2) dissociated whole-transcriptome single-cell RNA-sequencing (scRNA-seq) data. GLISS utilizes a graph-based association measure that we developed to select and link genes that are spatially-dependent in both data sources. GLISS can discover new spatial genes and recover cell locations in scRNA-seq data from landmark genes determined from SGE data. GLISS also offers a new dimension reduction technique to cluster the genes, while accounting for the inferred spatial structure of the cells. We demonstrate the utility of GLISS on simulated and real data sets, including two SGE data sets on the mouse olfactory bulb and breast cancer biopsies, and two integrative spatial studies of the mammalian liver and intestine.

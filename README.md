@@ -6,6 +6,9 @@
 
 ## Quick Tutorial 
 
+
+    from plot_utils import plot_ground_truth_heatmap
+
 ## Simulation Setup and Results
 
 ### Simulated SGE Analysis 
@@ -23,14 +26,14 @@ Notebooks:
 
 #### Setup SGE simulation
 
-Required raw data paths:
-`/share/PI/sabatti/sc_data/spatial_ge/scGCO/`
-
 Simulated data generation:
 `gliss/nb/sim_sge_setup.ipynb`
 
     from sim_utils import multi_2D_pattern, add_gaussian_noise
     from io_utils import save_data_to_file
+
+Required raw data paths:
+`/share/PI/sabatti/sc_data/spatial_ge/scGCO/`
 
 Output data path:
 `/share/PI/sabatti/feat_viz/space_comp_sim/20191104`
@@ -48,17 +51,78 @@ Run gliss on the simulated data:
     from sim_utils import complex_eval_spatial_sim, read_trial_data
 
 Running other benchmarks:
-- Dependencies: `gliss/benchmarks/requirements_sge_methods.txt`
-- Example script: `aloe/scripts/launch_scgco.sh` (also loads environemnt)
-- SpatialDE: `gliss/scripts/run_spatialde.py`
-- scGCO: `aloe/scripts/run_scgco.py`
+- Dependencies: `pip3 install -r benchmarks/requirements_sge_methods.txt`
+- Virtual environment name: `space_met`
+- Example script: `gliss/benchmarks/sge_methods/launch_scgco.sh` 
+- SpatialDE: `gliss/benchmarks/sge_methods/run_spatialde.py`
+- scGCO: `gliss/benchmarks/sge_methods/run_scgco.py`
 
 #### Analyze SGE outputs
-Run analyze the FDR and power of SV selection:
+Analyze the FDR and power of SV selection:
 `gliss/nb/sim_sge_analysis.ipynb`
 
-## scRNA-seq Data 
 
+### Simulated scRNA-seq Analysis 
+
+Core functions:
+
+    from main_methods import run_procedure
+    from spline_utils import setup_basis, spline_fit
+    from main_methods import compute_all_embeddings
+
+Notebooks:
+- `gliss/nb/sim_scrna_setup_and_run_gliss.ipynb`
+- `gliss/benchmarks/ti_methods/sim_scrna_Palantir_PAGA.ipynb`
+- `gliss/benchmarks/ti_methods/sim_scrna_Palantir_PAGA_LM_SV.ipynb`
+- `gliss/nb/sim_scrna_analysis_comparison.ipynb`
+
+#### Setup scRNA-seq simulation and run GLISS
+
+Simulated data generation:
+`gliss/nb/sim_scrna_setup_and_run_gliss.ipynb`
+
+    from io_utils import save_data_to_file
+    from sim_utils import get_corr_sim  # get simulation parameters
+    from sim_utils generate_invariant_data, model_corr_noise
+
+- `regime_0`: $\rho = 0.01$
+- `regime_1`: $\rho = 0.2$
+- `regime_2`: $\rho = 0.4$
+
+Required raw data paths:
+`/share/PI/sabatti/feat_viz/corr_sim/regime_*/`
+- `data_dict.pkl`: the matrix data (z: LM mtx, x: non-LM, lam: order)
+- `var_df.csv`: information of each feature
+
+Running GLISS:
+
+    from main_methods import run_procedure
+    from spline_utils import setup_basis, spline_fit
+    from main_methods import compute_all_embeddings
+
+Output data path:
+`/share/PI/sabatti/feat_viz/corr_sim/regime_*/`
+- `method_result.pkl`: SV selection result and spatial inference from GLISS
+    - FILL
+    - FILL 
+- `coeff_matrix.npy`: coefficient matrix after spline fitting 
+- `embed_dict.pkl`: visualizations of various gene representations
+    - FILL
+    - FILL
+
+#### Running other benchmarks:
+- Dependencies: `pip3 install -r benchmarks/requirements_ti_methods.txt`
+- Virtual environment name: `ti`
+- Vanilla PAGA/Palantir: `gliss/benchmarks/ti_methods/sim_scrna_Palantir_PAGA.ipynb`
+- LM+SV PAGA/Palantir: `gliss/benchmarks/ti_methods/sim_scrna_Palantir_PAGA_LM_SV.ipynb`
+
+#### Analyze scRNA-seq outputs
+
+    from sim_utils import get_corr_sim, generate_invariant_data, model_corr_noise
+    from spline_utils import setup_basis # for reconstruction from coefficients
+
+
+`gliss/nb/sim_scrna_analysis_comparison.ipynb`
 
 ## Real Data Analysis Instructions
 

@@ -1,5 +1,64 @@
 # GLISS
 
+## Installation
+
+    pip3 install -r requirements.txt
+
+## Quick Tutorial 
+
+## Simulation Setup and Results
+
+### Simulated SGE Analysis 
+
+Core functions:
+
+    from sim_utils import multi_2D_pattern, add_gaussian_noise
+    from main_methods import select_spatial_genes
+    from sim_utils import complex_eval_spatial_sim, read_trial_data
+
+Notebooks:
+- `gliss/nb/sim_sge_setup.ipynb`
+- `gliss/nb/sim_sge_run_gliss.ipynb`
+- `gliss/nb/sim_sge_analysis.ipynb` 
+
+#### Setup SGE simulation
+
+Required raw data paths:
+`/share/PI/sabatti/sc_data/spatial_ge/scGCO/`
+
+Simulated data generation:
+`gliss/nb/sim_sge_setup.ipynb`
+
+    from sim_utils import multi_2D_pattern, add_gaussian_noise
+    from io_utils import save_data_to_file
+
+Output data path:
+`/share/PI/sabatti/feat_viz/space_comp_sim/20191104`
+- `sim_setup.csv`: simulation parameters
+- `locs_2d.csv`: 2-D coordinates
+- `sim_data/mtx_*_*.csv`: gene expression matrices 
+
+
+#### Run SGE methods
+
+Run gliss on the simulated data:
+`gliss/nb/sim_sge_run_gliss.ipynb`
+
+    from main_methods import select_spatial_genes
+    from sim_utils import complex_eval_spatial_sim, read_trial_data
+
+Running other benchmarks:
+- Dependencies: `gliss/benchmarks/requirements_sge_methods.txt`
+- Example script: `aloe/scripts/launch_scgco.sh` (also loads environemnt)
+- SpatialDE: `gliss/scripts/run_spatialde.py`
+- scGCO: `aloe/scripts/run_scgco.py`
+
+#### Analyze SGE outputs
+Run analyze the FDR and power of SV selection:
+`gliss/nb/sim_sge_analysis.ipynb`
+
+## scRNA-seq Data 
+
 
 ## Real Data Analysis Instructions
 

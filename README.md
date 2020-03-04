@@ -121,34 +121,159 @@ Output data path:
     from sim_utils import get_corr_sim, generate_invariant_data, model_corr_noise
     from spline_utils import setup_basis # for reconstruction from coefficients
 
-
 `gliss/nb/sim_scrna_analysis_comparison.ipynb`
 
-## Real Data Analysis Instructions
 
-#### Preprocessing
+## Real Data Analysis 
 
-- see `notebooks/setup_real_data_preprocess_hepa.ipynb`
+
+### Hepatotype Dataset
+
+Data paths:
+- `/share/PI/sabatti/sc_data/liver2k/analysis_on_data_original/data`
+- `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_050719`
+- `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/hepa_data/ti_methods`
+
+Notebooks:
+
+- `gliss/nb/real_hepa_setup_part0_preprocess.ipynb`
+- `gliss/nb/real_hepa_setup_part1_latentspace.ipynb`
+- `gliss/nb/real_hepa_setup_part2_clustering.ipynb`
+- `gliss/benchmarks/ti_methods/real_hepa_run_paga.ipynb`
+- `gliss/benchmarks/ti_methods/real_hepa_run_palantir.ipynb`
+- `gliss/nb/real_hepa_analysis_part1.ipynb`
+
+#### Part 0: preprocessing
+
+`gliss/nb/real_hepa_setup_part0_preprocess.ipynb`
+
 - load processed data directly with: `liver_info.load_processsed_hepatocyte_data`:
     - `data/obs_info.csv`: meta information for the observations
     - `data/var_info.csv`: meta information for the genes
     - `data/matrix_unscaled.csv`: the expression matrix with 8883 genes
-    - data available by: `wget http://stanford.edu/~jjzhu/fileshare/aloe/hepa_data.tar.gz .`
-    
+
 - load the zonations from the original paper with `liver_info.load_zonation_result`
-    - download the table `table_s2_reform.csv` from https://www.nature.com/articles/nature21065
+    - downloaded the table `table_s2_reform.csv` from https://www.nature.com/articles/nature21065
     - the function will take the directory as input and compute maximum probabilities
-    
-#### Pre-analysis
 
-- see `notebooks/setup_real_data_hepa_1D.ipynb`
+Processed data is saved at: `/share/PI/sabatti/sc_data/liver2k/analysis_on_data_original/data`
 
-#### Visualize results
-
-- see `notebooks/analysis_real_data_hepa_1D.ipynb`
+#### Part 1: SV gene selection + latent space infernce
 
 
-## Simulation Instructions
+`gliss/nb/real_hepa_setup_part1_latentspace.ipynb`
+
+`gliss/nb/real_hepa_analysis_part1.ipynb`
+
+    from liver_info import load_processsed_hepatocyte_data, load_zonation_result, get_known_liver_markers
+    from io_utils import load_all_pipeline_results
+
+Output data path:
+`/share/PI/sabatti/feat_viz/real_analysis_result/analysis_050719`
+
+- There are multiple latent space inferncee options, but only `graph_vanilla` is used.
+- i.e.,  `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_050719/result_graph_vanilla`
+
+Other methods:
+- PAGA:  `gliss/benchmarks/ti_methods/real_hepa_run_paga.ipynb`
+- Palantir:  `gliss/benchmarks/ti_methods/real_hepa_run_palantir.ipynb`
+- Output: `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/hepa_data/ti_methods/*_obs_df.csv`
+
+#### Part 2: gene clustering
+
+`gliss/nb/real_hepa_setup_part2_clustering.ipynb`
+
+Temporary outputs:
+`/scratch/PI/sabatti/spatial_subplots/hepa_gene_clusters_ours_k_13/`
+
+### Enterocyte Dataset 
+
+Data paths:
+- `/share/PI/sabatti/sc_data/intestine2k`
+- `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/entero_data`
+- `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/entero_data/ti_methods`
+
+Notebooks:
+
+
+#### Part 0: preprocessing
+
+`gliss/nb/real_entero_setup_part0_preprocess.ipynb`
+
+
+#### Part 1: SV gene selection + latent space infernce
+
+`gliss/nb/real_entero_setup_part1_latentspace.ipynb`
+
+`gliss/nb/real_entero_analysis_part1.ipynb`
+
+    from intestine_info import load_processed_enterocyte_data, load_original_entero_zonation
+    from intestine_info import get_intestine_rna_lm_genes
+    from io_utils import load_all_pipeline_results, load_data_from_file
+
+Output data path:
+`/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/entero_data/results_our_lm/`
+
+- There are multiple latent space inferncee options, but only `graph_vanilla` is used.
+- i.e.,  `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/entero_data/results_our_lm/result_graph_vanilla`
+
+Other methods:
+- PAGA:  `gliss/benchmarks/ti_methods/real_entero_run_paga.ipynb`
+- Palantir:  `gliss/benchmarks/ti_methods/real_entero_run_palantir.ipynb`
+- Output: `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/entero_data/ti_methods/*_obs_df.csv`
+
+#### Part 2: gene clustering
+
+`gliss/nb/real_entero_setup_part2_clustering.ipynb`
+
+`gliss/nb/real_entero_analysis_part2.ipynb`
+
+Temporary outputs:
+`/scratch/PI/sabatti/spatial_subplots/intestine_gene_clusters_ours_k_15/`
+`/scratch/PI/sabatti/spatial_subplots/intestine_gene_clusters_ours_k_9/`
+
+
+### Real SGE Data Sets 
+
+Data paths:
+- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/Raw_data/MOB-breast-cancer/`
+- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/BreastCancer/*/Layer*_result_df.csv`
+- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/MouseOB/*/Rep*_result_df.csv`
+
+Notebooks:
+- `gliss/nb/real_sge_setup_bc.ipynb`
+- `gliss/nb/real_sge_setup_mob.ipynb`
+- `gliss/nb/real_sge_analysis.ipynb`
+
+#### Run GLISS
+
+Notebooks:
+- `gliss/nb/real_sge_setup_bc.ipynb`
+- `gliss/nb/real_sge_setup_mob.ipynb`
+
+    from main_methods import select_spatial_genes
+    from general_utils import read_spatial_expression, normalize_count_cellranger
+    from io_utils import save_data_to_file, load_data_from_file
+
+
+#### Analyze and compare methods
+
+`gliss/nb/real_sge_analysis.ipynb`
+
+Our data stored as `csv` files in: 
+- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/BreastCancer/our_results/`
+- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/MouseOB/our_results/`
+
+Other method results are stored in:
+- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/BreastCancer/scGCO_results/Layer*_result_df.csv`
+- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/BreastCancer/spatialDE_results/Layer*_result_df.csv`
+- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/MouseOB/scGCO_results/Rep*_result_df.csv`
+- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/MouseOB/spatialDE_results/Rep*_result_df.csv`
+
+------------------
+
+
+## Old Simulation Instructions
 
 #### Step-by-step guide:
 

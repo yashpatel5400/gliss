@@ -1453,7 +1453,7 @@ def plot_gene_expr_comp(lam_df, gene_df, methods, aliases, horizontal=False, fon
     
    
 def plot_col_color_heatmap(plt_mtx, grp_ids, lut, val_min=None, val_max=None,
-                           short=False, square=False, cmap="viridis"):
+                           short=False, square=False, cmap="viridis", cax_visible=True):
     feat_cols = pd.Series(grp_ids).map(lut)
     if val_min:
         plt_mtx[plt_mtx < val_min] = val_min
@@ -1481,7 +1481,7 @@ def plot_col_color_heatmap(plt_mtx, grp_ids, lut, val_min=None, val_max=None,
                           row_cluster=False, col_cluster=False, 
                           col_colors=col_colors, row_colors = row_colors,
                           figsize=figsize, cmap=cmap)
-    clear_sns_dendogram(grid,  cax_visible=True)
+    clear_sns_dendogram(grid,  cax_visible=cax_visible)
     
 
 def get_sim_color_map(grp_ids, palette="tab10"):    
@@ -1559,3 +1559,5 @@ def plot_multi_curves(ax, x, y_mtx, **kwargs):
     assert len(x) == y_mtx.shape[0], "dimension mismatch"
     for i in range(y_mtx.shape[1]):
         ax.plot(x, y_mtx[:,i], **kwargs)
+        
+        

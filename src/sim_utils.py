@@ -1264,3 +1264,15 @@ def read_trial_data(sim_dir, entry):
     dfn = os.path.join(sim_dir, entry['expr_fn'])
     data = load_data_from_file(dfn, 'csv')
     return locs, data
+
+
+def get_top_grps(df, num_grps):
+    # aggregates top correlation groups
+    df = df.sort_values('corr_grp') 
+    grp_df = df[['corr_grp','var_id']].groupby('corr_grp').size()
+    grp_df = grp_df.sort_values(ascending=False)
+    use_grp_ids = list(grp_df.index)
+    if num_grps:
+        use_grp_ids = use_grp_ids[:num_grps]
+    df = df.loc[df['corr_grp'].isin(use_grp_ids)]   
+    return df

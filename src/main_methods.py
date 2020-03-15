@@ -374,7 +374,7 @@ def graph_clustering(eigenvectors, k_vals):
     df = pd.DataFrame()
     for n_clust in k_vals:
         X = eigenvectors[:, 1:(n_clust+1)]
-        kmeans = KMeans(n_clusters=n_clust, random_state=0).fit(X)
+        kmeans = KMeans(n_clusters=n_clust, random_state=10).fit(X)
         labs = kmeans.labels_
         name = 'k_{}'.format(n_clust)
         df[name] = labs

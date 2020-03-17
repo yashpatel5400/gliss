@@ -6,14 +6,14 @@ The repo includes the code and notebooks of GLISS, a strategy to analyze spatial
 
     pip3 install -r requirements.txt
 
-## Quick Tutorial 
+## Quick Tutorial
 
 
     from plot_utils import plot_ground_truth_heatmap
 
 ## Simulation Setup and Results
 
-### Simulated SGE Analysis 
+### Simulated SGE Analysis
 
 Core functions:
 
@@ -24,7 +24,7 @@ Core functions:
 Notebooks:
 - `gliss/nb/sim_sge_setup.ipynb`
 - `gliss/nb/sim_sge_run_gliss.ipynb`
-- `gliss/nb/sim_sge_analysis.ipynb` 
+- `gliss/nb/sim_sge_analysis.ipynb`
 
 #### Setup SGE simulation
 
@@ -38,10 +38,13 @@ Required raw data paths:
 `/share/PI/sabatti/sc_data/spatial_ge/scGCO/`
 
 Output data path:
-`/share/PI/sabatti/feat_viz/space_comp_sim/20191104`
+
+`/Users/jjzhu/Google Drive/_GLISS/data/space_comp_sim/20191104`(local)
+
+`/share/PI/sabatti/feat_viz/space_comp_sim/20191104` (sherlock)
 - `sim_setup.csv`: simulation parameters
 - `locs_2d.csv`: 2-D coordinates
-- `sim_data/mtx_*_*.csv`: gene expression matrices 
+- `sim_data/mtx_*_*.csv`: gene expression matrices
 
 
 #### Run SGE methods
@@ -55,7 +58,7 @@ Run gliss on the simulated data:
 Running other benchmarks:
 - Dependencies: `pip3 install -r benchmarks/requirements_sge_methods.txt`
 - Virtual environment name: `space_met`
-- Example script: `gliss/benchmarks/sge_methods/launch_scgco.sh` 
+- Example script: `gliss/benchmarks/sge_methods/launch_scgco.sh`
 - SpatialDE: `gliss/benchmarks/sge_methods/run_spatialde.py`
 - scGCO: `gliss/benchmarks/sge_methods/run_scgco.py`
 
@@ -64,7 +67,7 @@ Analyze the FDR and power of SV selection:
 `gliss/nb/sim_sge_analysis.ipynb`
 
 
-### Simulated scRNA-seq Analysis 
+### Simulated scRNA-seq Analysis
 
 Core functions:
 
@@ -106,8 +109,8 @@ Output data path:
 `/share/PI/sabatti/feat_viz/corr_sim/regime_*/`
 - `method_result.pkl`: SV selection result and spatial inference from GLISS
     - FILL
-    - FILL 
-- `coeff_matrix.npy`: coefficient matrix after spline fitting 
+    - FILL
+- `coeff_matrix.npy`: coefficient matrix after spline fitting
 - `embed_dict.pkl`: visualizations of various gene representations
     - FILL
     - FILL
@@ -126,7 +129,7 @@ Output data path:
 `gliss/nb/sim_scrna_analysis_comparison.ipynb`
 
 
-## Real Data Analysis 
+## Real Data Analysis
 
 
 ### Hepatotype Dataset
@@ -188,7 +191,7 @@ Other methods:
 Temporary outputs:
 `/scratch/PI/sabatti/spatial_subplots/hepa_gene_clusters_ours_k_13/`
 
-### Enterocyte Dataset 
+### Enterocyte Dataset
 
 Data paths:
 - `/share/PI/sabatti/sc_data/intestine2k`
@@ -235,7 +238,7 @@ Temporary outputs:
 `/scratch/PI/sabatti/spatial_subplots/intestine_gene_clusters_ours_k_9/`
 
 
-### Real SGE Data Sets 
+### Real SGE Data Sets
 
 Data paths:
 - `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/Raw_data/MOB-breast-cancer/`
@@ -262,7 +265,7 @@ Notebooks:
 
 `gliss/nb/real_sge_analysis.ipynb`
 
-Our data stored as `csv` files in: 
+Our data stored as `csv` files in:
 - `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/BreastCancer/our_results/`
 - `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/MouseOB/our_results/`
 
@@ -293,9 +296,9 @@ Other method results are stored in:
 5. Create slurm jobs:
     - mote the estimated time and make adjustment to `create_trial_jobs(sim_id)` if necessary
     - alternatively, you can test with `bash */slurm_job.sh` in interactive mode
-    
-   
-#### Setup in notebooks: 
+
+
+#### Setup in notebooks:
 - `notebooks/setup_main_sim_1D.ipynb`
 - `notebooks/setup_supp_sim_strict_1D.ipynb`
 

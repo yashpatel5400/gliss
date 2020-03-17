@@ -1054,7 +1054,7 @@ def run_pipeline_nnvars(params,
 
 # -----------------------------------
 # simulation for correlation analysis
-def get_corr_sim(sim_id = "corr_sim", regime=0):
+def get_corr_sim(path, regime=0):
     if regime == 0:
         corr_value = 0.01
     elif regime == 1:
@@ -1074,7 +1074,7 @@ def get_corr_sim(sim_id = "corr_sim", regime=0):
     sim_params['noise_levs'] = []
     sim_params['sparsities'] = []
     sim_params['methods'] = ['unsup_graph', 'graph']
-    sim_params['sim_dir'] = '/share/PI/sabatti/feat_viz/{}/regime_{}'.format(sim_id, regime)
+    sim_params['sim_dir'] = '{}/regime_{}'.format(path, regime)
     sim_params['method_params'] =  {
         "method": "graph",
         "n_perms": 10000,

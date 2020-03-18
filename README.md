@@ -95,7 +95,11 @@ Simulated data generation:
 - `regime_2`: $\rho = 0.4$
 
 Required raw data paths:
-`/share/PI/sabatti/feat_viz/corr_sim/regime_*/`
+
+`/share/PI/sabatti/feat_viz/corr_sim/regime_*/` (sherlock)
+
+`/Users/jjzhu/Google Drive/_GLISS/data/scrna_sim` (local)
+
 - `data_dict.pkl`: the matrix data (z: LM mtx, x: non-LM, lam: order)
 - `var_df.csv`: information of each feature
 
@@ -135,9 +139,9 @@ Output data path:
 ### Hepatotype Dataset
 
 Data paths:
-- `/share/PI/sabatti/sc_data/liver2k/analysis_on_data_original/data`
-- `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_050719`
-- `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/hepa_data/ti_methods`
+- `.data/liver2k/analysis_on_data_original/data`
+- `.data/analysis_050719` (GLISS results)
+- `.data/analysis_060719/hepa_data/ti_methods`
 
 Notebooks:
 
@@ -194,9 +198,9 @@ Temporary outputs:
 ### Enterocyte Dataset
 
 Data paths:
-- `/share/PI/sabatti/sc_data/intestine2k`
-- `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/entero_data`
-- `/share/PI/sabatti/feat_viz/real_analysis_result/analysis_060719/entero_data/ti_methods`
+- `./data/intestine2k`
+- `./analysis_060719/entero_data`
+- `./analysis_060719/entero_data/ti_methods`
 
 Notebooks:
 
@@ -240,10 +244,16 @@ Temporary outputs:
 
 ### Real SGE Data Sets
 
+
 Data paths:
-- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/Raw_data/MOB-breast-cancer/`
-- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/BreastCancer/*/Layer*_result_df.csv`
-- `/share/PI/sabatti/sc_data/spatial_ge/scGCO/data/MouseOB/*/Rep*_result_df.csv`
+
+`/share/PI/sabatti/sc_data/spatial_ge/scGCO` (sherlock)
+
+`/Users/jjzhu/Google Drive/_GLISS/data/scGCO` (local)
+
+- `./data/Raw_data/MOB-breast-cancer/`
+- `./data/BreastCancer/*/Layer*_result_df.csv`
+- `./data/MouseOB/*/Rep*_result_df.csv`
 
 Notebooks:
 - `gliss/nb/real_sge_setup_bc.ipynb`

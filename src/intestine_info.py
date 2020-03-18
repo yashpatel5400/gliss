@@ -35,10 +35,10 @@ def output_processed_enterocyte_data(RDIR, adata):
     var_df = summarize_gene_df(adata) # gene_info
     write_unscaled_processed_data(out_dir, adata.obs, var_df, adata.X)
 
-def get_intestine_rna_lm_genes():
+def get_intestine_rna_lm_genes(dat_dir):
     # load landmark genes selected from rna genes
     # based on the analysis from the original paper
-    dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
+    # dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
     fn = os.path.join(dat_dir, "extracted", "RNAseq_gene_summary.csv")
     rna_df = pd.read_table(fn, delimiter=",")
     logger.info("Loaded {} genes".format(rna_df.shape[0]))
@@ -63,8 +63,8 @@ def get_intestine_rna_lm_genes():
 #     print(low_genes)
     return {"high": high_genes, "low": low_genes}
 
-def get_smFISH_validated_genes():
-    dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
+def get_smFISH_validated_genes(dat_dir):
+    # dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
     fn = os.path.join(dat_dir, "extracted", "smFISH_genes.csv")
     smFISH_genes = pd.read_table(fn, header=None)
     smFISH_genes = set(smFISH_genes[0])
@@ -84,8 +84,8 @@ def load_enterocyte_raw_data(dat_dir):
     raw_dat.index = cell_df["cell_id"]
     return raw_dat
 
-def load_enterocyte_meta_data(plot=True):
-    dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
+def load_enterocyte_meta_data(dat_dir, plot=True):
+    # dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
     fn = os.path.join(dat_dir, "table_C_scRNAseq_tsne_coordinates_zones.tsv")
     cell_df = pd.read_table(fn, delimiter="\t")
     cell_df = cell_df.set_index("cell_id")
@@ -128,9 +128,9 @@ def load_enterocyte_data(dat_dir, verbose = True):
     return adata
 
 
-def load_original_entero_zonation(just_vals=False):
+def load_original_entero_zonation(dat_dir, just_vals=False):
     # load the zonation data 
-    cell_df = load_enterocyte_meta_data(plot=False)
+    cell_df = load_enterocyte_meta_data(dat_dir, plot=False)
     zones = list(cell_df["zone"])
     mapping = {}        
     if just_vals:
@@ -149,8 +149,8 @@ def load_original_entero_zonation(just_vals=False):
         zones = [mapping[v] for v in zones]
     return zones
 
-def load_gene_set_clusters(var_df):
-    dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
+def load_gene_set_clusters(dat_dir, var_df):
+    # dat_dir = "/share/PI/sabatti/sc_data/intestine2k"
     fn =  os.path.join(dat_dir, "extracted", "kmeans_meta.csv")
     kdf = pd.read_csv(fn)
     fn =  os.path.join(dat_dir, "extracted", "kmeans_data.csv")

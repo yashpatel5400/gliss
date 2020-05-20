@@ -8,8 +8,7 @@ The repo includes the code and notebooks of GLISS, a strategy to analyze spatial
 
 ## Quick Tutorial
 
-
-    from plot_utils import plot_ground_truth_heatmap
+`./GLISS_Tutorial.ipynb`
 
 ## Simulation Setup and Results
 
@@ -110,7 +109,7 @@ Running GLISS:
     from main_methods import compute_all_embeddings
 
 Output data path:
-`/share/PI/sabatti/feat_viz/corr_sim/regime_*/`
+`./regime_*/`
 - `method_result.pkl`: SV selection result and spatial inference from GLISS
     - FILL
     - FILL
